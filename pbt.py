@@ -49,10 +49,15 @@ def randeval(worker):
     else:
         return np.random.random()
 
-def pbt(pop, train, test, cutoff=0.2):
+def trainpop(pop, train):
     for worker in pop:
         train(worker)
+
+def testpop(pop, test):
+    for worker in pop:
         worker.score = test(worker)
+
+def truncate(pop, cutoff=0.2):
     pop.sort(key=lambda worker: worker.score, reverse=True)
     for best,worst in zip(pop[:int(cutoff*len(pop))], pop[-int(cutoff*len(pop)):]):
         worst.dup(best)
@@ -61,6 +66,9 @@ population = [Worker() for _ in range(20)]
 print(population)
 
 for step in range(3):
-    pbt(population, nulltrain, randeval)
+    trainpop(population, nulltrain)
+    testpop(population, randeval)
+    truncate(population)
+
     print("Step:", step)
     print(population)
