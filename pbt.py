@@ -31,7 +31,7 @@ class Worker:
         self.nn = nn
 
     def __repr__(self):
-        return repr((self.score, self.hyperparams)) # , self.nn
+        return repr((id(self), self.score, self.hyperparams)) # , self.nn
 
     def dup(self, worker):
         self.score = worker.score
