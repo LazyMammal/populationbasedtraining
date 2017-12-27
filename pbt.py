@@ -36,5 +36,6 @@ class PBT:
 
     def truncate(self, cutoff=0.2):
         self.pop.sort(key=lambda worker: worker.score, reverse=True)
-        for best,worst in zip(self.pop[:int(cutoff*len(self.pop))], self.pop[-int(cutoff*len(self.pop)):]):
+        index = int(cutoff*len(self.pop))
+        for best,worst in zip(self.pop[:index], self.pop[-index:]):
             worst.dup(best)
