@@ -1,29 +1,5 @@
 from __future__ import print_function
 
-import numpy as np
-
-'''
-operations:
-* exploit_truncate (cutoff=20%)
-* explore_perturb (elite=20%)
-
-config:
-* start popsize
-* list of operations
-* list of parameters to tune (ranges, distributions)
-* training function
-* testing function
-
-loop:
-* train
-* test
-* rank
-* winnow
-* spawn
-'''
-
-# np.random.seed(0)
-
 class Worker:
     def __init__(self, hyperparams=None, nn=None):
         self.score = 0.0
@@ -38,37 +14,27 @@ class Worker:
         self.hyperparams = worker.hyperparams
         self.nn = worker.nn
 
-def nulltrain(worker):
-    # dotrain( worker.nn, worker.hyperparams )
-    pass
+class PBT:
+    def __init__(self, popsize=20, train=None, test=None):
+        self.pop = [Worker() for _ in range(popsize)]
+        self.train = train
+        self.test = test
+    
+    def trainpop(self, train=None):
+        if train is None:
+            train = self.train
+        if not train is None:
+            for worker in self.pop:
+                train(worker)
 
-def randeval(worker):
-    # return doeval( worker.nn )
-    if worker.score > 0.0:
-        return worker.score
-    else:
-        return np.random.random()
+    def testpop(self, test=None):
+        if test is None:
+            test = self.test
+        if not test is None:
+            for worker in self.pop:
+                worker.score = test(worker)
 
-def trainpop(pop, train):
-    for worker in pop:
-        train(worker)
-
-def testpop(pop, test):
-    for worker in pop:
-        worker.score = test(worker)
-
-def truncate(pop, cutoff=0.2):
-    pop.sort(key=lambda worker: worker.score, reverse=True)
-    for best,worst in zip(pop[:int(cutoff*len(pop))], pop[-int(cutoff*len(pop)):]):
-        worst.dup(best)
-
-population = [Worker() for _ in range(20)]
-print(population)
-
-for step in range(3):
-    trainpop(population, nulltrain)
-    testpop(population, randeval)
-    truncate(population)
-
-    print("Step:", step)
-    print(population)
+    def truncate(self, cutoff=0.2):
+        self.pop.sort(key=lambda worker: worker.score, reverse=True)
+        for best,worst in zip(self.pop[:int(cutoff*len(self.pop))], self.pop[-int(cutoff*len(self.pop)):]):
+            worst.dup(best)
