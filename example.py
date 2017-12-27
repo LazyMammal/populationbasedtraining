@@ -25,9 +25,11 @@ loop:
 
 # np.random.seed(0)
 
+
 def nulltrain(worker):
     # dotrain( worker.nn, worker.hyperparams )
     pass
+
 
 def randeval(worker):
     # return doeval( worker.nn )
@@ -35,6 +37,7 @@ def randeval(worker):
         return worker.score
     else:
         return np.random.random()
+
 
 population = PBT()
 print(population.pop)
