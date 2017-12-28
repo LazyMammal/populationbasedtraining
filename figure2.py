@@ -18,7 +18,7 @@ def surrogate_figure2(t, h):
 
 def objective_figure2(t):
     # 1.2 - (t1**2 + t2**2)
-    return 1.2 - (t[0]**2 + t[1]**2)
+    return 1.2 - np.sum(np.power(t,2))
 
 
 def eval_figure2(worker):
