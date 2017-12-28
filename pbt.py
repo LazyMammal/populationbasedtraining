@@ -33,8 +33,11 @@ class Worker:
 
 
 class PBT:
-    def __init__(self, popsize=20, train=None, test=None, explore=None):
-        self.pop = [Worker(explore=explore) for _ in range(popsize)]
+    def __init__(self, popsize=20, train=None, test=None, explore=None, pop=None):
+        if pop is None:
+            self.pop = [Worker(explore=explore) for _ in range(popsize)]
+        else:
+            self.pop = pop
         self.train = train
         self.test = test
         self.exploit = self.truncate
