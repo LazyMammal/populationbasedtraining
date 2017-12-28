@@ -56,19 +56,6 @@ def train_figure2(worker, steps, theta, h, optimizer, theta_update, theta_update
     worker.nn = theta.eval()
 
 
-def nulltrain(worker):
-    # dotrain( worker.nn, worker.hyperparams )
-    pass
-
-
-def randeval(worker):
-    # return doeval( worker.nn )
-    if worker.score > 0.0:
-        return worker.score
-    else:
-        return np.random.random()
-
-
 def make_plot(exploit, explore, poplist):
     make_plot.num += 1
 
