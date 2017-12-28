@@ -11,8 +11,8 @@ from pbt import Worker, PBT
 
 def surrogate_figure2(t, h):
     # 1.2 - (h1 * t1**2 + h2 * t2**2)
-    a = tf.constant(1.2)
-    p = tf.constant(2.0)
+    a = tf.constant(1.2, dtype=tf.float64)
+    p = tf.constant(2.0, dtype=tf.float64)
     return a - tf.reduce_sum(tf.multiply(h, tf.pow(t, p)))
 
 
@@ -25,23 +25,35 @@ def eval_figure2(worker):
     return objective_figure2(worker.nn)
 
 
-def train_figure2(worker, steps=1):
+def make_tf_model(theta_init=[0.9, 0.9], h_init=[1.0, 1.0]):
     sess = tf.get_default_session()
-    with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
-        theta = tf.get_variable("weights", initializer=tf.constant(worker.nn))
-        h = tf.placeholder_with_default(tf.constant([1.0, 1.0]), shape=[2])
-        yofx = surrogate_figure2(theta, h)
-        cost = -yofx
+    # with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
+    theta = tf.get_variable("theta", initializer=tf.constant(
+        theta_init, dtype=tf.float64), dtype=tf.float64)
+    theta_update_placeholder = tf.placeholder(theta.dtype, shape=theta.shape)
+    theta_update = theta.assign(theta_update_placeholder).op
 
-        learning_rate = 0.01
-        optimizer = tf.train.GradientDescentOptimizer(
-            learning_rate).minimize(cost)
-        init = tf.global_variables_initializer()
+    h = tf.placeholder_with_default(tf.constant(
+        h_init, dtype=tf.float64), shape=[2])
+    yofx = surrogate_figure2(theta, h)
+    cost = -yofx
 
-        sess.run(init)
-        for _ in range(steps):
-            sess.run(optimizer, feed_dict={h: worker.hyperparams})
-        worker.nn = theta.eval()
+    learning_rate = 0.01
+    optimizer = tf.train.GradientDescentOptimizer(
+        learning_rate).minimize(cost)
+    init = tf.global_variables_initializer()
+
+    sess.run(init)
+
+    return theta, h, optimizer, theta_update, theta_update_placeholder
+
+
+def train_figure2(worker, steps, theta, h, optimizer, theta_update, theta_update_placeholder):
+    sess = tf.get_default_session()
+    sess.run(theta_update, feed_dict={theta_update_placeholder: worker.nn})
+    for _ in range(steps):
+        sess.run(optimizer, feed_dict={h: worker.hyperparams})
+    worker.nn = theta.eval()
 
 
 def nulltrain(worker):
@@ -91,19 +103,26 @@ def main():
     # np.random.seed(0)
     with tf.Session() as sess:
 
+        theta, h, optimizer, theta_update, theta_update_placeholder = make_tf_model()
+
         for exploit in [True, False]:
             for explore in [True, False]:
 
-                population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9]),
-                                      Worker([1.0, 0.0], [0.9, 0.9])])
+                population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1),
+                                      Worker([1.0, 0.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1)])
                 population.testpop(eval_figure2)
                 poplist = [[[w.score, w.nn[0], w.nn[1]]
                             for w in population.pop]]
 
-                for step in range(10):
-                    for worker in population.pop:
-                        train_figure2(worker, 4)
+                for step in range(20):
                     start_time = timeit.default_timer()
+
+                    for _ in range(4):
+                        for worker in population.pop:
+                            train_figure2(worker, 4, theta, h, optimizer,
+                                          theta_update, theta_update_placeholder)
+                        poplist.append([[eval_figure2(w), w.nn[0], w.nn[1]]
+                                        for w in population.pop])
 
                     population.testpop(eval_figure2)
 
@@ -113,8 +132,6 @@ def main():
                     if explore:
                         population.explore(0.5)
 
-                    poplist.append([[w.score, w.nn[0], w.nn[1]]
-                                    for w in population.pop])
                     for idx, worker in enumerate(population.pop):
                         print(idx, worker)
                     elapsed = timeit.default_timer() - start_time
