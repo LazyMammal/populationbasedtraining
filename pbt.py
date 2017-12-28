@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import numpy as np
+
 
 class Worker:
     def __init__(self, hyperparams=None, nn=None):
@@ -14,6 +16,15 @@ class Worker:
         self.score = worker.score
         self.hyperparams = worker.hyperparams
         self.nn = worker.nn
+
+    def perturb(self, alpha=.5, beta=2.0):
+        if not self.hyperparams is None:
+            mult = alpha if np.random.random() > 0.5 else beta
+            self.hyperparams *= mult
+
+    def resample(self):
+        if not self.hyperparams is None:
+            pass
 
 
 class PBT:
@@ -36,8 +47,10 @@ class PBT:
             for worker in self.pop:
                 worker.score = test(worker)
 
-    def truncate(self, cutoff=0.2):
+    def truncate(self, cutoff=0.2, explore=None):
         self.pop.sort(key=lambda worker: worker.score, reverse=True)
         index = int(cutoff * len(self.pop))
         for best, worst in zip(self.pop[:index], self.pop[-index:]):
             worst.dup(best)
+            if not explore is None:
+                explore(worst)
