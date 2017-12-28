@@ -33,7 +33,8 @@ def train_figure2(worker, steps=1):
         cost = -yofx
 
         learning_rate = 0.01
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+        optimizer = tf.train.GradientDescentOptimizer(
+            learning_rate).minimize(cost)
         init = tf.global_variables_initializer()
 
         sess.run(init)
@@ -70,14 +71,16 @@ def make_plot(exploit, explore, poplist):
     plt.subplot(make_plot.num)
     plt.title(title)
     for m in range(len(poplist[0])):
-        plt.plot([w[m][0] for w in poplist]);
+        plt.plot([w[m][0] for w in poplist])
 
-    plt.subplot(make_plot.num+4)
+    plt.subplot(make_plot.num + 4)
     for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
-        plt.plot([w[m][1] for w in poplist], [w[m][2] for w in poplist], c=c, marker=marker);
+        plt.plot([w[m][1] for w in poplist], [w[m][2]
+                                              for w in poplist], c=c, marker=marker)
 
 
 make_plot.num = 240
+
 
 def main():
     """ make a plot from figure 2 in the PBT paper """
@@ -88,9 +91,10 @@ def main():
             for explore in [True, False]:
 
                 population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9]),
-                                    Worker([1.0, 0.0], [0.9, 0.9])])
+                                      Worker([1.0, 0.0], [0.9, 0.9])])
                 population.testpop(eval_figure2)
-                poplist = [[[w.score, w.nn[0], w.nn[1]] for w in population.pop]]
+                poplist = [[[w.score, w.nn[0], w.nn[1]]
+                            for w in population.pop]]
 
                 for step in range(10):
                     for worker in population.pop:
@@ -104,10 +108,11 @@ def main():
                     if explore:
                         population.explore(0.5)
 
-                    poplist.append([[w.score, w.nn[0], w.nn[1]] for w in population.pop])
-                    #print(poplist)
+                    poplist.append([[w.score, w.nn[0], w.nn[1]]
+                                    for w in population.pop])
 
                 make_plot(exploit, explore, poplist)
     plt.show()
+
 
 main()
