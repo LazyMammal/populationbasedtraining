@@ -6,7 +6,7 @@ import numpy as np
 class Worker:
     def __init__(self, hyperparams=None, nn=None, explore=None):
         self.score = 0.0
-        self.hyperparams = hyperparams
+        self.hyperparams = hyperparams or [1.0]
         self.nn = nn
         if explore is 'resample':
             self.explore = self.resample
@@ -22,9 +22,7 @@ class Worker:
         self.nn = worker.nn
 
     def perturb(self, alpha=.5, beta=2.0):
-        if not self.hyperparams is None:
-            mult = alpha if np.random.random() > 0.5 else beta
-            self.hyperparams *= mult
+        self.hyperparams[:] = [param * np.random.choice([alpha,beta]) for param in self.hyperparams]
 
     def resample(self):
         if not self.hyperparams is None:
