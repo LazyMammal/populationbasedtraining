@@ -3,6 +3,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 import copy
+import timeit
 import matplotlib.pyplot as plt
 
 from pbt import Worker, PBT
@@ -99,6 +100,7 @@ def main():
                 for step in range(10):
                     for worker in population.pop:
                         train_figure2(worker, 4)
+                    start_time = timeit.default_timer()
 
                     population.testpop(eval_figure2)
 
@@ -110,6 +112,11 @@ def main():
 
                     poplist.append([[w.score, w.nn[0], w.nn[1]]
                                     for w in population.pop])
+                    for idx, worker in enumerate(population.pop):
+                        print(idx, worker)
+                    elapsed = timeit.default_timer() - start_time
+                    print(elapsed, "s")
+                print('-----')
 
                 make_plot(exploit, explore, poplist)
     plt.show()
