@@ -9,7 +9,7 @@ class Worker:
         self.score = 0.0
         self.hyperparams = hyperparams or [1.0]
         self.nn = nn or [1.0]
-        self.func_explore = explore or self.perturbbeta
+        self.func_explore = explore or Worker.perturbbeta
         self.perturbscale = perturbscale
         self.jitter = jitter
 
@@ -27,17 +27,13 @@ class Worker:
     def explore(self):
         self.func_explore(self)
 
-    def perturbbeta(self, perturbscale=None):
-        if perturbscale is None:
-            perturbscale = self.perturbscale
+    def perturbbeta(self):
         self.hyperparams[:] = [
-            param * randbeta(perturbscale[0], perturbscale[1]) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
+            param * randbeta(self.perturbscale[0], self.perturbscale[1]) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
 
-    def perturb(self, perturbscale=None):
-        if perturbscale is None:
-            perturbscale = self.perturbscale
+    def perturb(self):
         self.hyperparams[:] = [
-            param * np.random.choice(perturbscale) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
+            param * np.random.choice(self.perturbscale) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
 
     def resample(self):
         if not self.hyperparams is None:
