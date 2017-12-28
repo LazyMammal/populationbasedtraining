@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Worker:
-    def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.5, 2.0]):
+    def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.5, 2.0], jitter=0.1):
         self.score = 0.0
         self.hyperparams = hyperparams or [1.0]
         self.nn = nn or [1.0]
@@ -14,6 +14,7 @@ class Worker:
         else:
             self.explore = self.perturbbeta
         self.perturbscale = perturbscale
+        self.jitter = jitter
 
     def __repr__(self):
         return repr((id(self), self.score, self.hyperparams, self.nn))
@@ -30,13 +31,13 @@ class Worker:
         if perturbscale is None:
             perturbscale = self.perturbscale
         self.hyperparams[:] = [
-            param * randbeta(perturbscale[0], perturbscale[1]) for param in self.hyperparams]
+            param * randbeta(perturbscale[0], perturbscale[1]) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
 
     def perturb(self, perturbscale=None):
         if perturbscale is None:
             perturbscale = self.perturbscale
         self.hyperparams[:] = [
-            param * np.random.choice(perturbscale) for param in self.hyperparams]
+            param * np.random.choice(perturbscale) + self.jitter * (np.random.random() - 0.5) for param in self.hyperparams]
 
     def resample(self):
         if not self.hyperparams is None:
