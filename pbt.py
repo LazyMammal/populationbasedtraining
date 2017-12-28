@@ -4,14 +4,14 @@ import numpy as np
 
 
 class Worker:
-    def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.8,1.2]):
+    def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.5, 2.0]):
         self.score = 0.0
         self.hyperparams = hyperparams or [1.0]
         self.nn = nn or [1.0]
         if explore is 'resample':
             self.explore = self.resample
         else:
-            self.explore = self.perturb
+            self.explore = self.perturbbeta
         self.perturbscale = perturbscale
 
     def __repr__(self):
@@ -24,6 +24,12 @@ class Worker:
 
     def dupweights(self, worker):
         self.nn = copy.copy(worker.nn)
+
+    def perturbbeta(self, perturbscale=None):
+        if perturbscale is None:
+            perturbscale = self.perturbscale
+        self.hyperparams[:] = [
+            param * randbeta(perturbscale[0], perturbscale[1]) for param in self.hyperparams]
 
     def perturb(self, perturbscale=None):
         if perturbscale is None:
@@ -70,3 +76,7 @@ class PBT:
         index = int(cutoff * len(self.pop))
         for worst in self.pop[-index:]:
             worst.explore()
+
+
+def randbeta(min_=0, max_=1, a=0.2, b=0.2):
+    return min_ + (max_ - min_) * np.random.beta(a, b)
