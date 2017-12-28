@@ -45,7 +45,8 @@ print(population.pop)
 for step in range(3):
     population.trainpop(nulltrain)
     population.testpop(randeval)
-    population.truncate()
+    population.exploit()
+    population.explore()
 
     print("Step:", step)
     print(population.pop)

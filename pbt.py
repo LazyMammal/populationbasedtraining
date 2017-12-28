@@ -7,7 +7,7 @@ class Worker:
     def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.8,1.2]):
         self.score = 0.0
         self.hyperparams = hyperparams or [1.0]
-        self.nn = nn
+        self.nn = nn or [1.0]
         if explore is 'resample':
             self.explore = self.resample
         else:
@@ -15,7 +15,7 @@ class Worker:
         self.perturbscale = perturbscale
 
     def __repr__(self):
-        return repr((id(self), self.score, self.hyperparams))  # , self.nn
+        return repr((id(self), self.score, self.hyperparams, self.nn))
 
     def dup(self, worker):
         self.score = worker.score
@@ -37,6 +37,7 @@ class PBT:
         self.pop = [Worker(explore=explore) for _ in range(popsize)]
         self.train = train
         self.test = test
+        self.exploit = self.truncate
 
     def trainpop(self, train=None):
         if train is None:
@@ -57,4 +58,9 @@ class PBT:
         index = int(cutoff * len(self.pop))
         for best, worst in zip(self.pop[:index], self.pop[-index:]):
             worst.dup(best)
+
+    def explore(self, cutoff=0.2):
+        self.pop.sort(key=lambda worker: worker.score, reverse=True)
+        index = int(cutoff * len(self.pop))
+        for worst in self.pop[-index:]:
             worst.explore()
