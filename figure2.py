@@ -92,6 +92,8 @@ def main():
 
         theta, h, optimizer, theta_update, theta_update_placeholder = make_tf_model()
 
+        start_time = timeit.default_timer()
+        split_start = start_time
         for exploit in [True, False]:
             for explore in [True, False]:
 
@@ -102,7 +104,6 @@ def main():
                             for w in population.pop]]
 
                 for step in range(20):
-                    start_time = timeit.default_timer()
 
                     for _ in range(4):
                         for worker in population.pop:
@@ -121,8 +122,9 @@ def main():
 
                     for idx, worker in enumerate(population.pop):
                         print(idx, worker)
-                    elapsed = timeit.default_timer() - start_time
-                    print(elapsed, "s")
+                    split_end = timeit.default_timer()
+                    print((split_end - split_start), "/", (split_end - start_time), "s")
+                    split_start = split_end
                 print('-----')
 
                 make_plot(exploit, explore, poplist)
