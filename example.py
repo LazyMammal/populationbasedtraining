@@ -39,7 +39,7 @@ def randeval(worker):
         return np.random.random()
 
 
-population = PBT()
+population = PBT(explore=Worker.perturb)
 print(population.pop)
 
 for step in range(3):

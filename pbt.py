@@ -9,10 +9,7 @@ class Worker:
         self.score = 0.0
         self.hyperparams = hyperparams or [1.0]
         self.nn = nn or [1.0]
-        if explore is 'resample':
-            self.explore = self.resample
-        else:
-            self.explore = self.perturbbeta
+        self.func_explore = explore or self.perturbbeta
         self.perturbscale = perturbscale
         self.jitter = jitter
 
@@ -26,6 +23,9 @@ class Worker:
 
     def dupweights(self, worker):
         self.nn = copy.copy(worker.nn)
+
+    def explore(self):
+        self.func_explore(self)
 
     def perturbbeta(self, perturbscale=None):
         if perturbscale is None:
