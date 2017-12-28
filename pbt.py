@@ -4,10 +4,14 @@ import numpy as np
 
 
 class Worker:
-    def __init__(self, hyperparams=None, nn=None):
+    def __init__(self, hyperparams=None, nn=None, explore=None):
         self.score = 0.0
         self.hyperparams = hyperparams
         self.nn = nn
+        if explore is 'resample':
+            self.explore = self.resample
+        else:
+            self.explore = self.perturb
 
     def __repr__(self):
         return repr((id(self), self.score, self.hyperparams))  # , self.nn
@@ -28,8 +32,8 @@ class Worker:
 
 
 class PBT:
-    def __init__(self, popsize=20, train=None, test=None):
-        self.pop = [Worker() for _ in range(popsize)]
+    def __init__(self, popsize=20, train=None, test=None, explore=None):
+        self.pop = [Worker(explore=explore) for _ in range(popsize)]
         self.train = train
         self.test = test
 
@@ -47,10 +51,9 @@ class PBT:
             for worker in self.pop:
                 worker.score = test(worker)
 
-    def truncate(self, cutoff=0.2, explore=None):
+    def truncate(self, cutoff=0.2):
         self.pop.sort(key=lambda worker: worker.score, reverse=True)
         index = int(cutoff * len(self.pop))
         for best, worst in zip(self.pop[:index], self.pop[-index:]):
             worst.dup(best)
-            if not explore is None:
-                worst.explore()
+            worst.explore()
