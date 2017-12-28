@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import copy
 import numpy as np
 
 
@@ -19,8 +19,11 @@ class Worker:
 
     def dup(self, worker):
         self.score = worker.score
-        self.hyperparams = worker.hyperparams
-        self.nn = worker.nn
+        self.hyperparams = copy.copy(worker.hyperparams)
+        self.nn = copy.copy(worker.nn)
+
+    def dupweights(self, worker):
+        self.nn = copy.copy(worker.nn)
 
     def perturb(self, perturbscale=None):
         if perturbscale is None:
@@ -60,7 +63,7 @@ class PBT:
         self.pop.sort(key=lambda worker: worker.score, reverse=True)
         index = int(cutoff * len(self.pop))
         for best, worst in zip(self.pop[:index], self.pop[-index:]):
-            worst.dup(best)
+            worst.dupweights(best)
 
     def explore(self, cutoff=0.2):
         self.pop.sort(key=lambda worker: worker.score, reverse=True)
