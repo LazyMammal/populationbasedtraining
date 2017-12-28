@@ -5,10 +5,10 @@ import numpy as np
 
 
 class Worker:
-    def __init__(self, hyperparams=None, nn=None, explore=None, perturbscale=[0.5, 2.0], jitter=0.1):
+    def __init__(self, hyperparams=[1.0], nn=[1.0], explore=None, perturbscale=[0.5, 2.0], jitter=0.1):
         self.score = 0.0
-        self.hyperparams = hyperparams or [1.0]
-        self.nn = nn or [1.0]
+        self.hyperparams = np.array(hyperparams)
+        self.nn = np.array(nn)
         self.func_explore = explore or Worker.perturbbeta
         self.perturbscale = perturbscale
         self.jitter = jitter
