@@ -53,4 +53,4 @@ class PBT:
         for best, worst in zip(self.pop[:index], self.pop[-index:]):
             worst.dup(best)
             if not explore is None:
-                explore(worst)
+                worst.explore()
