@@ -71,13 +71,16 @@ def make_plot(exploit, explore, poplist):
 
     plt.subplot(make_plot.num)
     plt.title(title)
-    for m in range(len(poplist[0])):
-        plt.plot([w[m][0] for w in poplist])
-
-    plt.subplot(make_plot.num + 4)
+    plt.ylim(-0.5, 1.25)
     for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
-        plt.plot([w[m][1] for w in poplist], [w[m][2]
-                                              for w in poplist], c=c, marker=marker)
+        plt.plot([w[m][0] for w in poplist], c=c, alpha=0.5)
+
+    ax = plt.subplot(make_plot.num + 4)
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+    for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
+        plt.scatter([w[m][1] for w in poplist],
+                    [w[m][2] for w in poplist], c=c, marker=marker, alpha=0.5)
 
 
 make_plot.num = 240
