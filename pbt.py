@@ -25,7 +25,7 @@ class Worker:
     def perturb(self, perturbscale=None):
         if perturbscale is None:
             perturbscale = self.perturbscale
-        self.hyperparams[:] = [param * np.random.choice(self.perturbscale) for param in self.hyperparams]
+        self.hyperparams[:] = [param * np.random.choice(perturbscale) for param in self.hyperparams]
 
     def resample(self):
         if not self.hyperparams is None:
