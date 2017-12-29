@@ -49,14 +49,17 @@ def main(args):
             sess.run(train_step, feed_dict={
                      x: batch_xs, y_: batch_ys, learning_rate: args.learning_rate})
 
-        test_size = 10000
+        test_size = len(mnist.test.labels)
+        print('test cases %d, ' % test_size, end='')
         acc = []
+        count = 0
         for _ in range(int(test_size / args.batch_size)):
             batch_xs, batch_ys = mnist.test.next_batch(
                 args.batch_size, shuffle=False)
             acc.append(sess.run(accuracy, feed_dict={
                        x: batch_xs, y_: batch_ys}))
-        print('test accuracy %g' % np.mean(acc))
+            count += len(batch_ys)
+        print('test accuracy %g (%d)' % (np.mean(acc), count))
 
 
 if __name__ == '__main__':
