@@ -79,13 +79,15 @@ class PBT:
                 worker.score = test(worker)
 
     def truncate(self, cutoff=0.2):
-        ranked = sorted(self.pop, key=lambda worker: worker.score, reverse=True)
+        ranked = sorted(
+            self.pop, key=lambda worker: worker.score, reverse=True)
         index = int(cutoff * len(ranked))
         for best, worst in zip(ranked[:index], ranked[-index:]):
             worst.dupweights(best)
 
     def explore(self, cutoff=0.2):
-        ranked = sorted(self.pop, key=lambda worker: worker.score, reverse=True)
+        ranked = sorted(
+            self.pop, key=lambda worker: worker.score, reverse=True)
         index = int(cutoff * len(ranked))
         for worst in ranked[-index:]:
             worst.explore()
