@@ -56,25 +56,20 @@ def train_figure2(worker, steps, theta, h, optimizer, theta_update, theta_update
     worker.nn = theta.eval()
 
 
-def make_plot(exploit, explore, poplist):
-    make_plot.num += 1
-
-    if exploit and explore:
-        title = "PBT"
-    elif exploit:
-        title = "exploit"
-    elif explore:
-        title = "explore"
-    else:
-        title = "only train"
-
-    plt.subplot(make_plot.num)
+def make_plot(title, plotnum, poplist):
+    plt.subplot(plotnum + 2)
     plt.title(title)
+    plt.xlabel("Step")
+    plt.ylabel("Q(θ)")
     plt.ylim(-0.5, 1.25)
     for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
-        plt.plot([w[m][0] for w in poplist], c=c, alpha=0.5)
+        plt.plot([w[m][3] for w in poplist],
+                 [w[m][0] for w in poplist], c=c, alpha=0.5)
 
-    ax = plt.subplot(make_plot.num + 4)
+    ax = plt.subplot(plotnum)
+    plt.title(title)
+    plt.xlabel(r'$\theta_0$')
+    plt.ylabel(r'$\theta_1$')
     plt.xlim(0, 1)
     plt.ylim(0, 1)
     for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
@@ -82,52 +77,57 @@ def make_plot(exploit, explore, poplist):
                     [w[m][2] for w in poplist], c=c, marker=marker, alpha=0.5)
 
 
-make_plot.num = 240
-
-
 def main():
     """ make a plot from figure 2 in the PBT paper """
     # np.random.seed(0)
+    plt.subplots_adjust(left=.085, bottom=.1, right=.975,
+                        top=.95, wspace=.45, hspace=.45)
+
     with tf.Session() as sess:
 
         theta, h, optimizer, theta_update, theta_update_placeholder = make_tf_model()
 
         start_time = timeit.default_timer()
         split_start = start_time
-        for exploit in [True, False]:
-            for explore in [True, False]:
+        for exploit, explore, name, plotnum in [
+            (True, True, "PBT", 241),
+            (False, True, "Explore only", 242),
+            (True, False, "Exploit only", 245),
+            (False, False, "Grid search", 246)
+        ]:
+            population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1),
+                                  Worker([1.0, 0.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1)])
+            population.testpop(eval_figure2)
+            poplist = [[[w.score, w.nn[0], w.nn[1], 0]
+                        for w in population.pop]]
 
-                population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1),
-                                      Worker([1.0, 0.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1)])
+            for step in range(20):
+
+                train_steps = 4
+                for substep in range(train_steps):
+                    for worker in population.pop:
+                        train_figure2(worker, 5, theta, h, optimizer,
+                                      theta_update, theta_update_placeholder)
+                    poplist.append([[eval_figure2(w), w.nn[0], w.nn[1], (step + substep / float(train_steps))]
+                                    for w in population.pop])
+
                 population.testpop(eval_figure2)
-                poplist = [[[w.score, w.nn[0], w.nn[1]]
-                            for w in population.pop]]
 
-                for step in range(20):
+                if exploit:
+                    population.exploit(0.5)
 
-                    for _ in range(4):
-                        for worker in population.pop:
-                            train_figure2(worker, 4, theta, h, optimizer,
-                                          theta_update, theta_update_placeholder)
-                        poplist.append([[eval_figure2(w), w.nn[0], w.nn[1]]
-                                        for w in population.pop])
+                if explore:
+                    population.explore(0.5)
 
-                    population.testpop(eval_figure2)
+                for idx, worker in enumerate(population.pop):
+                    print(idx, worker)
+                split_end = timeit.default_timer()
+                print((split_end - split_start), "/",
+                      (split_end - start_time), "s")
+                split_start = split_end
+            print('-----')
 
-                    if exploit:
-                        population.exploit(0.5)
-
-                    if explore:
-                        population.explore(0.5)
-
-                    for idx, worker in enumerate(population.pop):
-                        print(idx, worker)
-                    split_end = timeit.default_timer()
-                    print((split_end - split_start), "/", (split_end - start_time), "s")
-                    split_start = split_end
-                print('-----')
-
-                make_plot(exploit, explore, poplist)
+            make_plot(name, plotnum, poplist)
     plt.show()
 
 
