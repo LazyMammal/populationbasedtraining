@@ -58,30 +58,38 @@ def iterate_training(sess, batch_iterations, args, dataset, x, y_, train_step, l
 def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        batch_time = Timer()
-        batch_iterations = 100
-        for i in range(args.iterations // batch_iterations):
-            batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
-            train_accuracy = sess.run(
-                accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-            print('step %d, ' % i, end='')
-            print('batch time %g, ' % batch_time.split(), end='')
-            print('learning rate %g, ' % args.learning_rate, end='')
-            print('training accuracy %g' % train_accuracy)
-            iterate_training(sess, batch_iterations, args,
-                             dataset, x, y_, train_step, learning_rate)
+        train_session(sess, args, dataset, x, y_,
+                      train_step, learning_rate, accuracy)
+        test_session(sess, args, dataset, x, y_, accuracy)
 
-        test_size = len(dataset.test.labels)
-        print('test cases %d, ' % test_size, end='')
-        acc = []
-        count = 0
-        for _ in range(int(test_size / args.batch_size)):
-            batch_xs, batch_ys = dataset.test.next_batch(
-                args.batch_size, shuffle=False)
-            acc.append(sess.run(accuracy, feed_dict={
-                       x: batch_xs, y_: batch_ys}))
-            count += len(batch_ys)
-        print('test accuracy %g (%d)' % (np.mean(acc), count))
+
+def train_session(sess, args, dataset, x, y_, train_step, learning_rate, accuracy):
+    batch_time = Timer()
+    batch_iterations = 100
+    for i in range(args.iterations // batch_iterations):
+        batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
+        train_accuracy = sess.run(
+            accuracy, feed_dict={x: batch_xs, y_: batch_ys})
+        print('step %d, ' % i, end='')
+        print('batch time %g, ' % batch_time.split(), end='')
+        print('learning rate %g, ' % args.learning_rate, end='')
+        print('training accuracy %g' % train_accuracy)
+        iterate_training(sess, batch_iterations, args,
+                         dataset, x, y_, train_step, learning_rate)
+
+
+def test_session(sess, args, dataset, x, y_, accuracy):
+    test_size = len(dataset.test.labels)
+    print('test cases %d, ' % test_size, end='')
+    acc = []
+    count = 0
+    for _ in range(int(test_size / args.batch_size)):
+        batch_xs, batch_ys = dataset.test.next_batch(
+            args.batch_size, shuffle=False)
+        acc.append(sess.run(accuracy, feed_dict={
+            x: batch_xs, y_: batch_ys}))
+        count += len(batch_ys)
+    print('test accuracy %g (%d)' % (np.mean(acc), count))
 
 
 if __name__ == '__main__':
