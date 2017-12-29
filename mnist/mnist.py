@@ -10,7 +10,10 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 
 def main(args):
-    mnist = input_data.read_data_sets('input_data/', one_hot=True)
+    if args.dataset == 'mnist':
+        mnist = input_data.read_data_sets('input_data/', one_hot=True)
+    elif args.dataset == 'fashion':
+        mnist = input_data.read_data_sets('input_data/fashion', one_hot=True, source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
 
@@ -61,4 +64,6 @@ if __name__ == '__main__':
                         default=100, help="batch size (100)")
     parser.add_argument('--learning_rate', nargs='?', type=float,
                         default=0.01, help="learning rate (0.01)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
+                        default='mnist', help='The name of dataset')
     main(parser.parse_args())
