@@ -13,7 +13,9 @@ def main(args):
     if args.dataset == 'mnist':
         mnist = input_data.read_data_sets('input_data/', one_hot=True)
     elif args.dataset == 'fashion':
-        mnist = input_data.read_data_sets('input_data/fashion', one_hot=True, source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
+        mnist = input_data.read_data_sets(
+            'input_data/fashion', one_hot=True, source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
+
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
 
