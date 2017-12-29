@@ -14,7 +14,9 @@ from timer import Timer
 def main(args):
     main_time = Timer()
     dataset = get_dataset(args.dataset)
-    model = gen_model(args.model, args.loss)
+    modelmodule = import_module(args.model)
+    lossmodule = import_module(args.loss)
+    model = gen_model(modelmodule, lossmodule)
     run_session(args.iterations, args.batch_size,
                 args.learning_rate, dataset, *model)
     print('total time %g' % main_time.elapsed())
@@ -34,11 +36,8 @@ def gen_model(modelmodule, lossmodule):
     y_ = tf.placeholder(tf.float32, [None, 10])
     learning_rate = tf.placeholder(tf.float32, shape=[])
 
-    model = import_module(modelmodule)
-    loss = import_module(lossmodule)
-
-    y = model.make_model(x, y_)
-    loss_fn = loss.make_loss(y, y_)
+    y = modelmodule.make_model(x, y_)
+    loss_fn = lossmodule.make_loss(y, y_)
 
     train_step = tf.train.AdamOptimizer(
         learning_rate=learning_rate).minimize(loss_fn)
