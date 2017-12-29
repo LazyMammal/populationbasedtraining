@@ -51,13 +51,14 @@ def gen_model(args):
 def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-
+        batch_time = Timer()
         for i in range(args.iterations):
             batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
             if i % 100 == 0:
                 train_accuracy = sess.run(
                     accuracy, feed_dict={x: batch_xs, y_: batch_ys})
                 print('step %d, ' % i, end='')
+                print('batch time %g, ' % batch_time.split(), end='')
                 print('learning rate %g, ' % args.learning_rate, end='')
                 print('training accuracy %g' % train_accuracy)
             sess.run(train_step, feed_dict={

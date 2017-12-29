@@ -5,11 +5,14 @@ import timeit
 
 class Timer:
     def __init__(self):
-        self.times = [timeit.default_timer()]
+        self.start_time = timeit.default_timer()
+        self.split_time = self.start_time
 
     def elapsed(self):
-        return timeit.default_timer() - self.times[0]
+        return timeit.default_timer() - self.start_time
 
     def split(self):
-        self.times.append(timeit.default_timer())
-        return self.times[-1] - self.times[0]
+        time_now = timeit.default_timer()
+        delta_time = time_now - self.split_time
+        self.split_time = time_now
+        return delta_time
