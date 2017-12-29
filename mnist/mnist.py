@@ -14,7 +14,7 @@ from timer import Timer
 def main(args):
     main_time = Timer()
     dataset = get_dataset(args)
-    model = gen_model(args)
+    model = gen_model(args.model, args.loss)
     run_session(args, dataset, *model)
     print('total time %g' % main_time.elapsed())
 
@@ -28,13 +28,13 @@ def get_dataset(args):
     return mnist
 
 
-def gen_model(args):
+def gen_model(modelmodule, lossmodule):
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
     learning_rate = tf.placeholder(tf.float32, shape=[])
 
-    model = import_module(args.model)
-    loss = import_module(args.loss)
+    model = import_module(modelmodule)
+    loss = import_module(lossmodule)
 
     y = model.make_model(x, y_)
     loss_fn = loss.make_loss(y, y_)
