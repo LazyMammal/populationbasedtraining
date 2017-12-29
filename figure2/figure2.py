@@ -57,11 +57,12 @@ def train_figure2(worker, steps, theta, h, optimizer, theta_update, theta_update
 
 
 def make_plot(title, plotnum, poplist):
-    plt.subplot(plotnum + 2)
+    ax = plt.subplot(plotnum + 2)
     plt.title(title)
     plt.xlabel("Step")
     plt.ylabel("Q(θ)")
-    plt.ylim(-0.5, 1.25)
+    plt.ylim(-0.5, 1.2)
+    plt.xticks(np.arange(7 + 1))
     for m, c, marker in zip(range(len(poplist[0])), ['b', 'g', 'r'], ['^', 'v', 'o']):
         plt.plot([w[m][3] for w in poplist],
                  [w[m][0] for w in poplist], c=c, alpha=0.5)
@@ -95,18 +96,18 @@ def main():
             (True, False, "Exploit only", 245),
             (False, False, "Grid search", 246)
         ]:
-            population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1),
-                                  Worker([1.0, 0.0], [0.9, 0.9], perturbscale=[0.9, 1.1], jitter=0.1)])
+            population = PBT(pop=[Worker([0.0, 1.0], [0.9, 0.9], perturbscale=[0.5, 2.0], jitter=0.5, cliprange=(0, 100)),
+                                  Worker([1.0, 0.0], [0.9, 0.9], perturbscale=[0.5, 2.0], jitter=0.5, cliprange=(0, 100))])
             population.testpop(eval_figure2)
             poplist = [[[w.score, w.nn[0], w.nn[1], 0]
                         for w in population.pop]]
 
-            for step in range(20):
+            for step in range(0, 7):
 
-                train_steps = 4
+                train_steps = 5
                 for substep in range(train_steps):
                     for worker in population.pop:
-                        train_figure2(worker, 5, theta, h, optimizer,
+                        train_figure2(worker, 4, theta, h, optimizer,
                                       theta_update, theta_update_placeholder)
                     poplist.append([[eval_figure2(w), w.nn[0], w.nn[1], (step + substep / float(train_steps))]
                                     for w in population.pop])
