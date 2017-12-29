@@ -10,12 +10,21 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 
 def main(args):
+    dataset = get_dataset(args)
+    model = gen_model(args)
+    run_session(args, dataset, *model)
+
+
+def get_dataset(args):
     if args.dataset == 'mnist':
         mnist = input_data.read_data_sets('input_data/', one_hot=True)
     elif args.dataset == 'fashion':
         mnist = input_data.read_data_sets(
             'input_data/fashion', one_hot=True, source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
+    return mnist
 
+
+def gen_model(args):
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
     learning_rate = tf.placeholder(tf.float32, shape=[])
@@ -32,11 +41,15 @@ def main(args):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-    with tf.Session(config=config) as sess:
+    return x, y_, train_step, learning_rate, accuracy
+
+
+def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
+    with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
         for i in range(args.iterations):
-            batch_xs, batch_ys = mnist.train.next_batch(args.batch_size)
+            batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
             if i % 100 == 0:
                 train_accuracy = sess.run(
                     accuracy, feed_dict={x: batch_xs, y_: batch_ys})
@@ -46,12 +59,12 @@ def main(args):
             sess.run(train_step, feed_dict={
                      x: batch_xs, y_: batch_ys, learning_rate: args.learning_rate})
 
-        test_size = len(mnist.test.labels)
+        test_size = len(dataset.test.labels)
         print('test cases %d, ' % test_size, end='')
         acc = []
         count = 0
         for _ in range(int(test_size / args.batch_size)):
-            batch_xs, batch_ys = mnist.test.next_batch(
+            batch_xs, batch_ys = dataset.test.next_batch(
                 args.batch_size, shuffle=False)
             acc.append(sess.run(accuracy, feed_dict={
                        x: batch_xs, y_: batch_ys}))
