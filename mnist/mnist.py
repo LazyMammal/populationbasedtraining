@@ -28,7 +28,7 @@ def main(args):
         print("learning_rate", args.learning_rate)
 
         for i in range(args.iterations):
-            batch_xs, batch_ys = mnist.train.next_batch(100)
+            batch_xs, batch_ys = mnist.train.next_batch(args.batch_size)
             if i % 100 == 0:
                 train_accuracy = sess.run(
                     accuracy, feed_dict={x: batch_xs, y_: batch_ys})
@@ -47,6 +47,8 @@ if __name__ == '__main__':
                         default="softmax", help="tensorflow loss")
     parser.add_argument('--iterations', nargs='?', type=int,
                         default=1000, help="training iterations")
+    parser.add_argument('--batch_size', nargs='?', type=int,
+                        default=100, help="batch size (100)")
     parser.add_argument('--learning_rate', nargs='?', type=float,
                         default=0.01, help="learning rate (0.01)")
     main(parser.parse_args())
