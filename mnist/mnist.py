@@ -48,11 +48,11 @@ def gen_model(args):
     return x, y_, train_step, learning_rate, accuracy
 
 
-def iterate_training(sess, batch_iterations, args, dataset, x, y_, train_step, learning_rate):
+def iterate_training(sess, batch_iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate):
     for i in range(batch_iterations):
-        batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
+        batch_xs, batch_ys = dataset.train.next_batch(batch_size)
         sess.run(train_step, feed_dict={
-            x: batch_xs, y_: batch_ys, learning_rate: args.learning_rate})
+                 x: batch_xs, y_: batch_ys, learning_rate: learn_rate})
 
 
 def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
@@ -74,7 +74,7 @@ def train_session(sess, args, dataset, x, y_, train_step, learning_rate, accurac
         print('batch time %g, ' % batch_time.split(), end='')
         print('learning rate %g, ' % args.learning_rate, end='')
         print('training accuracy %g' % train_accuracy)
-        iterate_training(sess, batch_iterations, args,
+        iterate_training(sess, batch_iterations, args.batch_size, args.learning_rate,
                          dataset, x, y_, train_step, learning_rate)
 
 
