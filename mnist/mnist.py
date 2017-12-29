@@ -15,7 +15,8 @@ def main(args):
     main_time = Timer()
     dataset = get_dataset(args.dataset)
     model = gen_model(args.model, args.loss)
-    run_session(args, dataset, *model)
+    run_session(args.iterations, args.batch_size,
+                args.learning_rate, dataset, *model)
     print('total time %g' % main_time.elapsed())
 
 
@@ -55,12 +56,12 @@ def iterate_training(sess, batch_iterations, batch_size, learn_rate, dataset, x,
             x: batch_xs, y_: batch_ys, learning_rate: learn_rate})
 
 
-def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
+def run_session(iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        train_session(sess, args.iterations, args.batch_size, args.learning_rate,
+        train_session(sess, iterations, batch_size, learn_rate,
                       dataset, x, y_, train_step, learning_rate, accuracy)
-        test_session(sess, args.batch_size, dataset, x, y_, accuracy)
+        test_session(sess, batch_size, dataset, x, y_, accuracy)
 
 
 def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
