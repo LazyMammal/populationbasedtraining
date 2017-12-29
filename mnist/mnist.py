@@ -60,7 +60,7 @@ def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
         sess.run(tf.global_variables_initializer())
         train_session(sess, args, dataset, x, y_,
                       train_step, learning_rate, accuracy)
-        test_session(sess, args, dataset, x, y_, accuracy)
+        test_session(sess, args.batch_size, dataset, x, y_, accuracy)
 
 
 def train_session(sess, args, dataset, x, y_, train_step, learning_rate, accuracy):
@@ -78,16 +78,14 @@ def train_session(sess, args, dataset, x, y_, train_step, learning_rate, accurac
                          dataset, x, y_, train_step, learning_rate)
 
 
-def test_session(sess, args, dataset, x, y_, accuracy):
+def test_session(sess, batch_size, dataset, x, y_, accuracy):
     test_size = len(dataset.test.labels)
     print('test cases %d, ' % test_size, end='')
     acc = []
     count = 0
-    for _ in range(int(test_size / args.batch_size)):
-        batch_xs, batch_ys = dataset.test.next_batch(
-            args.batch_size, shuffle=False)
-        acc.append(sess.run(accuracy, feed_dict={
-            x: batch_xs, y_: batch_ys}))
+    for _ in range(int(test_size / batch_size)):
+        batch_xs, batch_ys = dataset.test.next_batch(batch_size, shuffle=False)
+        acc.append(sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys}))
         count += len(batch_ys)
     print('test accuracy %g (%d)' % (np.mean(acc), count))
 
