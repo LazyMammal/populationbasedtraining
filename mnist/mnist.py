@@ -18,13 +18,16 @@ def main(args):
 
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
+    learning_rate = tf.placeholder(tf.float32, shape=[])
 
     model = import_module(args.model)
     loss = import_module(args.loss)
 
     y = model.make_model(x, y_)
     loss_fn = loss.make_loss(y, y_)
-    train_step = tf.train.AdamOptimizer(args.learning_rate).minimize(loss_fn)
+
+    train_step = tf.train.AdamOptimizer(
+        learning_rate=learning_rate).minimize(loss_fn)
 
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -34,15 +37,17 @@ def main(args):
 
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        print("learning_rate", args.learning_rate)
 
         for i in range(args.iterations):
             batch_xs, batch_ys = mnist.train.next_batch(args.batch_size)
             if i % 100 == 0:
                 train_accuracy = sess.run(
                     accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-                print('step %d, training accuracy %g' % (i, train_accuracy))
-            sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+                print('step %d, ' % i, end='')
+                print('learning rate %g, ' % args.learning_rate, end='')
+                print('training accuracy %g' % train_accuracy)
+            sess.run(train_step, feed_dict={
+                     x: batch_xs, y_: batch_ys, learning_rate: args.learning_rate})
 
         test_size = 10000
         acc = []
