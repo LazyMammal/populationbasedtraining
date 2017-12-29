@@ -18,26 +18,24 @@ def main(args):
 
     y = model.make_model(x, y_)
     loss_fn = loss.make_loss(y, y_)
-    train_step = tf.train.GradientDescentOptimizer(args.learning_rate).minimize(loss_fn)
+    train_step = tf.train.AdamOptimizer(args.learning_rate).minimize(loss_fn)
 
-    with tf.Session() as sess:
-        tf.global_variables_initializer().run()
-
-        train_model(args.iterations, x, y_, train_step, mnist, sess)
-        test_model(x, y, y_, mnist, sess)
-
-
-def train_model(iterations, x, y_, train_step, mnist, sess):
-    for _ in range(iterations):
-        batch_xs, batch_ys = mnist.train.next_batch(100)
-        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-
-
-def test_model(x, y, y_, mnist, sess):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print(sess.run(accuracy, feed_dict={x: mnist.test.images,
-                                        y_: mnist.test.labels}))
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        for i in range(args.iterations):
+            batch_xs, batch_ys = mnist.train.next_batch(100)
+            if i % 100 == 0:
+                train_accuracy = sess.run(
+                    accuracy, feed_dict={x: batch_xs, y_: batch_ys})
+                print('step %d, training accuracy %g' % (i, train_accuracy))
+            sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+        print('test accuracy %g' % sess.run(accuracy, feed_dict={
+              x: mnist.test.images, y_: mnist.test.labels}))
 
 
 if __name__ == '__main__':
