@@ -58,23 +58,23 @@ def iterate_training(sess, batch_iterations, batch_size, learn_rate, dataset, x,
 def run_session(args, dataset, x, y_, train_step, learning_rate, accuracy):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        train_session(sess, args, dataset, x, y_,
-                      train_step, learning_rate, accuracy)
+        train_session(sess, args.iterations, args.batch_size, args.learning_rate,
+                      dataset, x, y_, train_step, learning_rate, accuracy)
         test_session(sess, args.batch_size, dataset, x, y_, accuracy)
 
 
-def train_session(sess, args, dataset, x, y_, train_step, learning_rate, accuracy):
+def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     batch_time = Timer()
     batch_iterations = 100
-    for i in range(args.iterations // batch_iterations):
-        batch_xs, batch_ys = dataset.train.next_batch(args.batch_size)
+    for i in range(iterations // batch_iterations):
+        batch_xs, batch_ys = dataset.train.next_batch(batch_size)
         train_accuracy = sess.run(
             accuracy, feed_dict={x: batch_xs, y_: batch_ys})
         print('step %d, ' % i, end='')
         print('batch time %g, ' % batch_time.split(), end='')
-        print('learning rate %g, ' % args.learning_rate, end='')
+        print('learning rate %g, ' % learn_rate, end='')
         print('training accuracy %g' % train_accuracy)
-        iterate_training(sess, batch_iterations, args.batch_size, args.learning_rate,
+        iterate_training(sess, batch_iterations, batch_size, learn_rate,
                          dataset, x, y_, train_step, learning_rate)
 
 
