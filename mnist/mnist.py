@@ -8,11 +8,15 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
+from timer import Timer
+
 
 def main(args):
+    main_time = Timer()
     dataset = get_dataset(args)
     model = gen_model(args)
     run_session(args, dataset, *model)
+    print('total time %g' % main_time.elapsed())
 
 
 def get_dataset(args):
