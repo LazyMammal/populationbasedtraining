@@ -28,6 +28,7 @@ experiments:
 * architecture (net2deeper, net2wider, sparse, randomize weight)
 * meta-PBT (optimize PBT config using PBT)
 
+hyperparameter training targets:
 
 * learning rate
 * dropout rate
