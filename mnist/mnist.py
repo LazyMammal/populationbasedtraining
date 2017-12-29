@@ -13,16 +13,16 @@ from timer import Timer
 
 def main(args):
     main_time = Timer()
-    dataset = get_dataset(args)
+    dataset = get_dataset(args.dataset)
     model = gen_model(args.model, args.loss)
     run_session(args, dataset, *model)
     print('total time %g' % main_time.elapsed())
 
 
-def get_dataset(args):
-    if args.dataset == 'mnist':
+def get_dataset(dataset):
+    if dataset == 'mnist':
         mnist = input_data.read_data_sets('input_data/', one_hot=True)
-    elif args.dataset == 'fashion':
+    elif dataset == 'fashion':
         mnist = input_data.read_data_sets(
             'input_data/fashion', one_hot=True, source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
     return mnist
