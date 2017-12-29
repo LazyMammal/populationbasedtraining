@@ -4,6 +4,7 @@ import sys
 import argparse
 from importlib import import_module
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -38,8 +39,14 @@ def main(args):
                 print('step %d, training accuracy %g' % (i, train_accuracy))
             sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
-        print('test accuracy %g' % sess.run(accuracy, feed_dict={
-              x: mnist.test.images, y_: mnist.test.labels}))
+        test_size = 10000
+        acc = []
+        for _ in range(int(test_size / args.batch_size)):
+            batch_xs, batch_ys = mnist.test.next_batch(
+                args.batch_size, shuffle=False)
+            acc.append(sess.run(accuracy, feed_dict={
+                       x: batch_xs, y_: batch_ys}))
+        print('test accuracy %g' % np.mean(acc))
 
 
 if __name__ == '__main__':
