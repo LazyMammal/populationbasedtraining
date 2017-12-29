@@ -27,3 +27,10 @@ experiments:
 * recombination (hyperparams, weights)
 * architecture (net2deeper, net2wider, sparse, randomize weight)
 * meta-PBT (optimize PBT config using PBT)
+
+
+* learning rate
+* dropout rate
+* batch size
+* entropy cost
+* unroll length
