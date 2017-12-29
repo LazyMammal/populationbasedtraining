@@ -25,6 +25,7 @@ def main(args):
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        print("learning_rate", args.learning_rate)
 
         for i in range(args.iterations):
             batch_xs, batch_ys = mnist.train.next_batch(100)
