@@ -15,7 +15,7 @@ def main():
     model = mnist.gen_model(modelmodule, lossmodule)
     init_op = tf.global_variables_initializer()
 
-    popsize = 10
+    popsize = 5
     saver = tf.train.Saver(max_to_keep=popsize)
 
     batch_size = 100
@@ -31,7 +31,7 @@ def main():
             print('worker (%d) setup time %g' % (i, main_time.split()))
         print('total setup time %g' % main_time.elapsed())
 
-        for step in range(10):
+        for step in range(5):
             for wid, name in enumerate(workers):
                 saver.restore(sess, name)
                 print('step %d, ' % step, end='')
