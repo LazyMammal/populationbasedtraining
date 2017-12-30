@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
+import pbt
 
 
 def main(args):
@@ -17,7 +18,7 @@ def main(args):
     workers = build_workers(args.popsize, dataset, [
                             resample_learnrate, resample_batchsize])
     tf.reset_default_graph()
-    train_workers(workers, args.train_time, args.steps)
+    train_workers(workers, args.train_time, args.steps, pbt.pbt)
     print('total time %3.1f' % main_time.elapsed())
 
 
