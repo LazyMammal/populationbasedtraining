@@ -65,12 +65,12 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     accuracy = tf.get_collection('accuracy')[0]
 
     batch_time = Timer()
-    batch_iterations = 10
+    batch_iterations = 100
     count = 0
     while batch_time.elapsed() < train_time:
         mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
                                dataset, x, y_, train_step, learning_rate)
-        count += 1
+        count += batch_iterations
     batch_xs, batch_ys = dataset.train.next_batch(test_size)
     train_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     batch_xs, batch_ys = dataset.test.next_batch(test_size)
