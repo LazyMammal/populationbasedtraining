@@ -28,8 +28,8 @@ def main():
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
             workers.append(name)
-            print('worker (%d) setup time %g' % (i, main_time.split()))
-        print('total setup time %g' % main_time.elapsed())
+            print('worker (%d) setup time %3.1f' % (i, main_time.split()))
+        print('total setup time %3.1f' % main_time.elapsed())
 
         for step in range(5):
             for wid, name in enumerate(workers):
@@ -38,25 +38,27 @@ def main():
                 print('worker %d, ' % wid, end='')
                 train_graph(sess, 3.0, batch_size, learn_rate, dataset, *model)
                 saver.save(sess, name)
-            print('step time %g' % main_time.split())
+            print('step time %3.1f' % main_time.split())
 
-        print('total time %g' % main_time.elapsed())
+        print('total time %3.1f' % main_time.elapsed())
 
 
 def train_graph(sess, train_time, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     batch_time = Timer()
     batch_iterations = 10
+    count = 0
     while batch_time.elapsed() < train_time:
         mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
                                dataset, x, y_, train_step, learning_rate)
     batch_xs, batch_ys = dataset.train.next_batch(batch_size)
+        count += 1
     train_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     batch_xs, batch_ys = dataset.test.next_batch(batch_size)
     test_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-    print('batch time %g, ' % batch_time.split(), end='')
-    print('learning rate %g, ' % learn_rate, end='')
-    print('training accuracy %g, ' % train_accuracy, end='')
-    print('testing accuracy %g' % test_accuracy)
+    print('batch time %3.1f (%d), ' % (batch_time.split(), count), end='')
+    print('learning rate %3.3g, ' % learn_rate, end='')
+    print('training accuracy %3.3f, ' % train_accuracy, end='')
+    print('testing accuracy %3.3f' % test_accuracy)
 
 
 if __name__ == '__main__':
