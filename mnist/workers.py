@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sys
+import argparse
 from importlib import import_module
 
 import tensorflow as tf
@@ -7,7 +9,7 @@ from timer import Timer
 import mnist
 
 
-def main():
+def main(args):
     main_time = Timer()
     dataset = mnist.get_dataset(args.dataset)
     modelmodule = import_module(args.model)
@@ -15,8 +17,7 @@ def main():
     model = mnist.gen_model(modelmodule, lossmodule)
     init_op = tf.global_variables_initializer()
 
-    popsize = 5
-    saver = tf.train.Saver(max_to_keep=popsize)
+    saver = tf.train.Saver(max_to_keep=args.popsize)
 
     batch_size = 100
     test_size = 1000
@@ -24,7 +25,7 @@ def main():
 
     with tf.Session() as sess:
         workers = []
-        for i in range(popsize):
+        for i in range(args.popsize):
             sess.run(init_op)
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
@@ -42,7 +43,7 @@ def main():
                 saver2.restore(sess, name)
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % wid, end='')
-                train_graph(sess, 1.0, batch_size,
+                train_graph(sess, args.train_time, batch_size,
                             test_size, learn_rate, dataset)
                 saver2.save(sess, name)
             print('step time %3.1f' % main_time.split())
@@ -75,4 +76,15 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', nargs='?',
+                        default="bias_layer", help="tensorflow model")
+    parser.add_argument('--loss', nargs='?',
+                        default="softmax", help="tensorflow loss")
+    parser.add_argument('--popsize', nargs='?', type=int,
+                        default=10, help="number of workers (10)")
+    parser.add_argument('--train_time', nargs='?', type=float,
+                        default=10.0, help="training time per worker per step (10.0s)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
+                        default='mnist', help='name of dataset')
+    main(parser.parse_args())
