@@ -91,22 +91,37 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     accuracy = tf.get_collection('accuracy')[0]
 
     batch_time = Timer()
-    batch_iterations = 100
+    iterations = 50
+    total_iterations = 0
     count = 0
     while batch_time.elapsed() < train_time:
-        mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
+        mnist.iterate_training(sess, iterations, batch_size, learn_rate,
                                dataset, x, y_, train_step, learning_rate)
-        count += batch_iterations
-    batch_xs, batch_ys = dataset.train.next_batch(test_size)
-    train_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-    batch_xs, batch_ys = dataset.test.next_batch(test_size)
-    test_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-    print('batch time %3.1f (%d), ' % (batch_time.split(), count), end='')
+        count += 1
+        total_iterations += iterations
+
+    print('samples trained %d (%3.1fs) %d, ' %
+          (total_iterations * batch_size, batch_time.split(), count), end='')
     print('learning rate %3.3g, ' % learn_rate, end='')
     print('batch size %d, ' % batch_size, end='')
-    print('training accuracy %3.3f, ' % train_accuracy, end='')
-    print('testing accuracy %3.3f' % test_accuracy)
-    return test_accuracy
+
+    trainscore = test_accuracy(sess, dataset.train, test_size,
+                               x, y_, accuracy, True)
+    testscore = test_accuracy(sess, dataset.test, test_size, x, y_, accuracy)
+
+    print('train %3.3f, ' % trainscore, end='')
+    print('test %3.3f (%3.1fs)' % (testscore, batch_time.split()))
+
+    return testscore
+
+
+def test_accuracy(sess, dataset, test_size, x, y_, accuracy, shuffle=False):
+    scores = []
+    for _ in range(len(dataset.labels) // test_size):
+        batch_xs, batch_ys = dataset.next_batch(test_size, shuffle=shuffle)
+        scores.append(sess.run(accuracy, feed_dict={
+                      x: batch_xs, y_: batch_ys}))
+    return np.mean(scores)
 
 
 if __name__ == '__main__':
