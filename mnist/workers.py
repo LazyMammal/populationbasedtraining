@@ -10,6 +10,7 @@ import mnist
 
 
 def main(args):
+    main_time = Timer()
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
@@ -21,6 +22,7 @@ def main(args):
 
 
 def build_workers(popsize, dataset, hparams_fun=None):
+    build_time = Timer()
     init_op = tf.get_collection('init_op')[0]
 
     saver = tf.train.Saver(max_to_keep=popsize)
@@ -36,8 +38,8 @@ def build_workers(popsize, dataset, hparams_fun=None):
                       'hparams': hparams, 'resample': hparams_fun, 'dataset': dataset}
             workers.append(worker)
 
-            print('worker (%d) setup time %3.1f' % (i, main_time.split()))
-        print('total setup time %3.1f' % main_time.elapsed())
+            print('worker (%d) setup time %3.1f' % (i, build_time.split()))
+        print('total setup time %3.1f' % build_time.elapsed())
     sess.close()
     return workers
 
@@ -51,6 +53,7 @@ def resample_batchsize():
 
 
 def train_workers(workers, train_time, training_steps, test_size=1000):
+    step_time = Timer()
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
             for worker in workers:
@@ -62,7 +65,7 @@ def train_workers(workers, train_time, training_steps, test_size=1000):
                                     test_size, worker['hparams'][0], worker['dataset'])
                 worker['score'] = score
                 saver2.save(sess, worker['name'])
-            print('step time %3.1f' % main_time.split())
+            print('step time %3.1f' % step_time.split())
 
 
 def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
@@ -92,7 +95,6 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
 
 
 if __name__ == '__main__':
-    main_time = Timer()
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?',
                         default="bias_layer", help="tensorflow model")
