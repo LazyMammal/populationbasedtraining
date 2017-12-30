@@ -6,9 +6,7 @@ import copy
 
 def pbt(workers):
     print('pbt:', len(workers), 'workers')
-    dup_hparams(workers[1], workers[0])
-    dup_weights(workers[1], workers[0])
-    resample_hparams(workers[0])
+    truncate_pop(workers, explore_fun=resample_hparams)
 
 
 def dup_hparams(dest, source):
@@ -21,3 +19,14 @@ def dup_weights(dest, source):
 
 def resample_hparams(worker):
     worker['hparams'] = [fun() for fun in worker['resample']]
+
+
+def truncate_pop(workers, cutoff=0.2, dup_all=True, explore_fun=None):
+    ranked = sorted(workers, key=lambda worker: worker['score'], reverse=True)
+    index = int(cutoff * len(ranked))
+    for best, worst in zip(ranked[:index], ranked[-index:]):
+        dup_weights(worst, best)
+        if dup_all:
+            dup_hparams(worst, best)
+        if explore_fun:
+            explore_fun(worst)
