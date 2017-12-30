@@ -45,11 +45,14 @@ def gen_model(modelmodule, lossmodule):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+    init_op = tf.global_variables_initializer()
+
     tf.add_to_collection('x', x)
     tf.add_to_collection('y_', y_)
     tf.add_to_collection('train_step', train_step)
     tf.add_to_collection('learning_rate', learning_rate)
     tf.add_to_collection('accuracy', accuracy)
+    tf.add_to_collection('init_op', init_op)
 
     return x, y_, train_step, learning_rate, accuracy
 

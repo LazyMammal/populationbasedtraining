@@ -10,22 +10,25 @@ import mnist
 
 
 def main(args):
-    main_time = Timer()
     dataset = mnist.get_dataset(args.dataset)
     modelmodule = import_module(args.model)
     lossmodule = import_module(args.loss)
     model = mnist.gen_model(modelmodule, lossmodule)
-    init_op = tf.global_variables_initializer()
 
-    saver = tf.train.Saver(max_to_keep=args.popsize)
+    workers = build_workers(args.popsize)
+    tf.reset_default_graph()
+    train_workers(workers, dataset, args.train_time)
+    print('total time %3.1f' % main_time.elapsed())
 
-    batch_size = 100
-    test_size = 1000
-    learn_rate = 0.01
+
+def build_workers(popsize):
+    init_op = tf.get_collection('init_op')[0]
+
+    saver = tf.train.Saver(max_to_keep=popsize)
 
     with tf.Session() as sess:
         workers = []
-        for i in range(args.popsize):
+        for i in range(popsize):
             sess.run(init_op)
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
@@ -33,8 +36,13 @@ def main(args):
             print('worker (%d) setup time %3.1f' % (i, main_time.split()))
         print('total setup time %3.1f' % main_time.elapsed())
     sess.close()
+    return workers
 
-    tf.reset_default_graph()
+
+def train_workers(workers, dataset, train_time):
+    batch_size = 100
+    test_size = 1000
+    learn_rate = 0.01
 
     with tf.Session() as sess:
         for step in range(2):
@@ -43,12 +51,10 @@ def main(args):
                 saver2.restore(sess, name)
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % wid, end='')
-                train_graph(sess, args.train_time, batch_size,
+                train_graph(sess, train_time, batch_size,
                             test_size, learn_rate, dataset)
                 saver2.save(sess, name)
             print('step time %3.1f' % main_time.split())
-
-        print('total time %3.1f' % main_time.elapsed())
 
 
 def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
@@ -76,6 +82,7 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
 
 
 if __name__ == '__main__':
+    main_time = Timer()
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?',
                         default="bias_layer", help="tensorflow model")
