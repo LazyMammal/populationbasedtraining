@@ -4,9 +4,9 @@ import numpy as np
 import copy
 
 
-def pbt(workers):
+def pbt(workers, cutoff=0.2):
     print('pbt:', len(workers), 'workers')
-    truncate_pop(workers, explore_fun=perturb_hparams)
+    truncate_pop(workers, cutoff, explore_fun=perturb_hparams)
 
 
 def dup_hparams(dest, source):
@@ -43,3 +43,31 @@ def perturb(hparam, min_=0.0, max_=1.0, scale=[0.9, 1.1]):
 
 def randbeta(min_=0, max_=1, a=0.2, b=0.2):
     return min_ + (max_ - min_) * np.random.beta(a, b)
+
+
+def main():
+    dataset = 'mock'
+    hparams_fun = [np.random.random]
+    perturb_fun = [perturb]
+    popsize = 10
+
+    workers = []
+    for i in range(popsize):
+        name = 'ckpt/worker_' + str(i) + '.ckpt'
+        hparams = [fun() for fun in hparams_fun]
+        worker = {'name': name, 'dup_from_name': None, 'id': i, 'score': np.random.random(),
+                  'hparams': hparams, 'resample': hparams_fun, 'perturb': perturb_fun,
+                  'dataset': dataset}
+        workers.append(worker)
+
+    for step in range(1, 2 + 1):
+        print('step %d' % step)
+        for worker in workers:
+            for key in ['name', 'dup_from_name', 'id', 'score', 'hparams', 'dataset']:
+                print(key, worker[key], end=', ')
+            print('')
+        pbt(workers, 0.5)
+
+
+if __name__ == '__main__':
+    main()
