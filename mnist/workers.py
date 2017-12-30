@@ -4,6 +4,7 @@ import sys
 import argparse
 from importlib import import_module
 
+import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
@@ -39,14 +40,18 @@ def build_workers(popsize):
     sess.close()
     return workers
 
+def resample_learnrate():
+    return 2.0**np.log(np.random.lognormal()/10.0)/100.0
+
+def resample_batchsize():
+    return int(np.random.logseries(.95)*10)
 
 def train_workers(workers, dataset, train_time, training_steps):
     batch_size = 100
     test_size = 1000
-    learn_rate = 0.01
 
     for worker in workers:
-        worker['hparams'] = (learn_rate, batch_size)
+        worker['hparams'] = (resample_learnrate(), resample_batchsize())
 
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
