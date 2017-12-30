@@ -13,13 +13,13 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    workers = build_workers(args.popsize)
+    workers = build_workers(args.popsize, dataset, [resample_learnrate, resample_batchsize])
     tf.reset_default_graph()
-    train_workers(workers, dataset, args.train_time, args.steps)
+    train_workers(workers, args.train_time, args.steps)
     print('total time %3.1f' % main_time.elapsed())
 
 
-def build_workers(popsize):
+def build_workers(popsize, dataset, hparams_fun=None):
     init_op = tf.get_collection('init_op')[0]
 
     saver = tf.train.Saver(max_to_keep=popsize)
@@ -30,25 +30,28 @@ def build_workers(popsize):
             sess.run(init_op)
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
-            workers.append(
-                {'name': name, 'id': i, 'score': 0.0, 'hparams': None})
+            hparams = [fun() for fun in hparams_fun]
+            worker = {'name': name, 'id': i, 'score': 0.0,
+                      'hparams': hparams, 'resample': hparams_fun, 'dataset': dataset}
+            workers.append(worker)
+
             print('worker (%d) setup time %3.1f' % (i, main_time.split()))
         print('total setup time %3.1f' % main_time.elapsed())
     sess.close()
     return workers
 
+
 def resample_learnrate():
-    return 2.0**np.log(np.random.lognormal()/10.0)/100.0
+    return 2.0**np.log(np.random.lognormal() / 10.0) / 100.0
+
 
 def resample_batchsize():
-    return int(np.random.logseries(.95)*10)
+    return int(np.random.logseries(.95) * 10)
 
-def train_workers(workers, dataset, train_time, training_steps):
+
+def train_workers(workers, train_time, training_steps):
     batch_size = 100
     test_size = 1000
-
-    for worker in workers:
-        worker['hparams'] = (resample_learnrate(), resample_batchsize())
 
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
@@ -58,7 +61,7 @@ def train_workers(workers, dataset, train_time, training_steps):
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % worker['id'], end='')
                 score = train_graph(sess, train_time, worker['hparams'][1],
-                                    test_size, worker['hparams'][0], dataset)
+                                    test_size, worker['hparams'][0], worker['dataset'])
                 worker['score'] = score
                 saver2.save(sess, worker['name'])
             print('step time %3.1f' % main_time.split())
