@@ -9,9 +9,9 @@ import mnist
 
 def main():
     main_time = Timer()
-    dataset = mnist.get_dataset('fashion')     # mnist
-    modelmodule = import_module('conv_model')  # tanh_layer
-    lossmodule = import_module('softmax')
+    dataset = mnist.get_dataset(args.dataset)
+    modelmodule = import_module(args.model)
+    lossmodule = import_module(args.loss)
     model = mnist.gen_model(modelmodule, lossmodule)
     init_op = tf.global_variables_initializer()
 
@@ -31,20 +31,32 @@ def main():
             workers.append(name)
             print('worker (%d) setup time %3.1f' % (i, main_time.split()))
         print('total setup time %3.1f' % main_time.elapsed())
+    sess.close()
 
-        for step in range(5):
+    tf.reset_default_graph()
+
+    with tf.Session() as sess:
+        for step in range(2):
             for wid, name in enumerate(workers):
-                saver.restore(sess, name)
+                saver2 = tf.train.import_meta_graph(name + '.meta')
+                saver2.restore(sess, name)
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % wid, end='')
-                train_graph(sess, 3.0, batch_size, test_size, learn_rate, dataset, *model)
-                saver.save(sess, name)
+                train_graph(sess, 1.0, batch_size,
+                            test_size, learn_rate, dataset)
+                saver2.save(sess, name)
             print('step time %3.1f' % main_time.split())
 
         print('total time %3.1f' % main_time.elapsed())
 
 
-def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
+def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
+    train_step = tf.get_collection('train_step')[0]
+    x = tf.get_collection('x')[0]
+    y_ = tf.get_collection('y_')[0]
+    learning_rate = tf.get_collection('learning_rate')[0]
+    accuracy = tf.get_collection('accuracy')[0]
+
     batch_time = Timer()
     batch_iterations = 10
     count = 0
