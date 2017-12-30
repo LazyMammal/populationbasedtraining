@@ -14,20 +14,22 @@ def main():
     lossmodule = import_module('softmax')
     model = mnist.gen_model(modelmodule, lossmodule)
     init_op = tf.global_variables_initializer()
-    saver = tf.train.Saver()
+
+    popsize = 10
+    saver = tf.train.Saver(max_to_keep=popsize)
 
     batch_size = 100
     learn_rate = 0.01
 
     with tf.Session() as sess:
         workers = []
-        popsize = 2
         for i in range(popsize):
             sess.run(init_op)
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
             workers.append(name)
-        print('setup time %g' % main_time.split())
+            print('worker (%d) setup time %g' % (i, main_time.split()))
+        print('total setup time %g' % main_time.elapsed())
 
         for step in range(10):
             for wid, name in enumerate(workers):
@@ -43,7 +45,7 @@ def main():
 
 def train_graph(sess, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     batch_time = Timer()
-    batch_iterations = 1000
+    batch_iterations = 100
     mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
                            dataset, x, y_, train_step, learning_rate)
     batch_xs, batch_ys = dataset.train.next_batch(batch_size)
