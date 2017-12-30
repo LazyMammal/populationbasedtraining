@@ -13,7 +13,8 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    workers = build_workers(args.popsize, dataset, [resample_learnrate, resample_batchsize])
+    workers = build_workers(args.popsize, dataset, [
+                            resample_learnrate, resample_batchsize])
     tf.reset_default_graph()
     train_workers(workers, args.train_time, args.steps)
     print('total time %3.1f' % main_time.elapsed())
@@ -49,10 +50,7 @@ def resample_batchsize():
     return int(np.random.logseries(.95) * 10)
 
 
-def train_workers(workers, train_time, training_steps):
-    batch_size = 100
-    test_size = 1000
-
+def train_workers(workers, train_time, training_steps, test_size=1000):
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
             for worker in workers:
