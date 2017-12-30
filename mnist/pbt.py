@@ -8,6 +8,7 @@ def pbt(workers):
     print('pbt:', len(workers), 'workers')
     dup_hparams(workers[1], workers[0])
     dup_weights(workers[1], workers[0])
+    resample_hparams(workers[0])
 
 
 def dup_hparams(dest, source):
