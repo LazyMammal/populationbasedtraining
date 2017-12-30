@@ -34,7 +34,7 @@ def build_workers(popsize, dataset, hparams_fun=None):
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
             hparams = [fun() for fun in hparams_fun]
-            worker = {'name': name, 'id': i, 'score': 0.0,
+            worker = {'name': name, 'dup_from_name': None, 'id': i, 'score': 0.0,
                       'hparams': hparams, 'resample': hparams_fun, 'dataset': dataset}
             workers.append(worker)
 
@@ -57,8 +57,10 @@ def train_workers(workers, train_time, training_steps, test_size=1000):
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
             for worker in workers:
-                saver2 = tf.train.import_meta_graph(worker['name'] + '.meta')
-                saver2.restore(sess, worker['name'])
+                name = worker['dup_from_name'] or worker['name']
+                saver2 = tf.train.import_meta_graph(name + '.meta')
+                saver2.restore(sess, name)
+                worker['dup_from_name'] = None
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % worker['id'], end='')
                 score = train_graph(sess, train_time, worker['hparams'][1],
