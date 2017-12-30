@@ -6,7 +6,7 @@ import copy
 
 def pbt(workers):
     print('pbt:', len(workers), 'workers')
-    truncate_pop(workers, explore_fun=resample_hparams)
+    truncate_pop(workers, explore_fun=perturb_hparams)
 
 
 def dup_hparams(dest, source):
@@ -19,6 +19,11 @@ def dup_weights(dest, source):
 
 def resample_hparams(worker):
     worker['hparams'] = [fun() for fun in worker['resample']]
+
+
+def perturb_hparams(worker):
+    worker['hparams'] = [fun(param) for fun, param in zip(
+        worker['perturb'], worker['hparams'])]
 
 
 def truncate_pop(workers, cutoff=0.2, dup_all=True, explore_fun=None):

@@ -15,14 +15,15 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    workers = build_workers(args.popsize, dataset, [
-                            resample_learnrate, resample_batchsize])
+    workers = build_workers(args.popsize, dataset,
+                            [resample_learnrate, resample_batchsize],
+                            [perturb_learnrate, perturb_batchsize])
     tf.reset_default_graph()
     train_workers(workers, args.train_time, args.steps, pbt.pbt)
     print('total time %3.1f' % main_time.elapsed())
 
 
-def build_workers(popsize, dataset, hparams_fun=None):
+def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
     build_time = Timer()
     init_op = tf.get_collection('init_op')[0]
 
@@ -36,7 +37,8 @@ def build_workers(popsize, dataset, hparams_fun=None):
             saver.save(sess, name)
             hparams = [fun() for fun in hparams_fun]
             worker = {'name': name, 'dup_from_name': None, 'id': i, 'score': 0.0,
-                      'hparams': hparams, 'resample': hparams_fun, 'dataset': dataset}
+                      'hparams': hparams, 'resample': hparams_fun, 'perturb': perturb_fun,
+                      'dataset': dataset}
             workers.append(worker)
 
             print('worker (%d) setup time %3.1f' % (i, build_time.split()))
@@ -51,6 +53,22 @@ def resample_learnrate():
 
 def resample_batchsize():
     return int(np.random.logseries(.95) * 10)
+
+
+def perturb_learnrate(learnrate):
+    return perturb(learnrate, 0.0, 0.1)
+
+
+def perturb_batchsize(batchsize):
+    return int(perturb(batchsize / 10.0, 1, 100) * 10)
+
+
+def perturb(hparam, min_=0.0, max_=1.0, scale=[0.5, 2.0]):
+    return np.clip(hparam * randbeta(*scale), min_, max_)
+
+
+def randbeta(min_=0, max_=1, a=0.2, b=0.2):
+    return min_ + (max_ - min_) * np.random.beta(a, b)
 
 
 def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
