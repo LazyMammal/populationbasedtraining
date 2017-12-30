@@ -52,7 +52,7 @@ def resample_batchsize():
     return int(np.random.logseries(.95) * 10)
 
 
-def train_workers(workers, train_time, training_steps, test_size=1000):
+def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
     step_time = Timer()
     with tf.Session() as sess:
         for step in range(1, training_steps + 1):
@@ -67,6 +67,8 @@ def train_workers(workers, train_time, training_steps, test_size=1000):
                                     test_size, worker['hparams'][0], worker['dataset'])
                 worker['score'] = score
                 saver2.save(sess, worker['name'])
+            if step_callback:
+                step_callback(workers)
             print('step time %3.1f' % step_time.split())
 
 
