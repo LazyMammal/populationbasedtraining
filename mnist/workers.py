@@ -19,6 +19,7 @@ def main():
     saver = tf.train.Saver(max_to_keep=popsize)
 
     batch_size = 100
+    test_size = 1000
     learn_rate = 0.01
 
     with tf.Session() as sess:
@@ -36,24 +37,24 @@ def main():
                 saver.restore(sess, name)
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % wid, end='')
-                train_graph(sess, 3.0, batch_size, learn_rate, dataset, *model)
+                train_graph(sess, 3.0, batch_size, test_size, learn_rate, dataset, *model)
                 saver.save(sess, name)
             print('step time %3.1f' % main_time.split())
 
         print('total time %3.1f' % main_time.elapsed())
 
 
-def train_graph(sess, train_time, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
+def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     batch_time = Timer()
     batch_iterations = 10
     count = 0
     while batch_time.elapsed() < train_time:
         mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
                                dataset, x, y_, train_step, learning_rate)
-    batch_xs, batch_ys = dataset.train.next_batch(batch_size)
         count += 1
+    batch_xs, batch_ys = dataset.train.next_batch(test_size)
     train_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-    batch_xs, batch_ys = dataset.test.next_batch(batch_size)
+    batch_xs, batch_ys = dataset.test.next_batch(test_size)
     test_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     print('batch time %3.1f (%d), ' % (batch_time.split(), count), end='')
     print('learning rate %3.3g, ' % learn_rate, end='')
