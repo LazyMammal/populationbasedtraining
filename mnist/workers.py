@@ -32,7 +32,7 @@ def build_workers(popsize):
             sess.run(init_op)
             name = 'ckpt/worker_' + str(i) + '.ckpt'
             saver.save(sess, name)
-            workers.append({'name': name})
+            workers.append({'name': name, 'id': i})
             print('worker (%d) setup time %3.1f' % (i, main_time.split()))
         print('total setup time %3.1f' % main_time.elapsed())
     sess.close()
@@ -45,14 +45,15 @@ def train_workers(workers, dataset, train_time, training_steps):
     learn_rate = 0.01
 
     with tf.Session() as sess:
-        for step in range(1, training_steps+1):
-            for wid, worker in enumerate(workers):
+        for step in range(1, training_steps + 1):
+            for worker in workers:
                 saver2 = tf.train.import_meta_graph(worker['name'] + '.meta')
                 saver2.restore(sess, worker['name'])
                 print('step %d, ' % step, end='')
-                print('worker %d, ' % wid, end='')
-                train_graph(sess, train_time, batch_size,
-                            test_size, learn_rate, dataset)
+                print('worker %d, ' % worker['id'], end='')
+                score = train_graph(sess, train_time, batch_size,
+                                    test_size, learn_rate, dataset)
+                worker['score'] = score
                 saver2.save(sess, worker['name'])
             print('step time %3.1f' % main_time.split())
 
@@ -79,6 +80,7 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     print('learning rate %3.3g, ' % learn_rate, end='')
     print('training accuracy %3.3f, ' % train_accuracy, end='')
     print('testing accuracy %3.3f' % test_accuracy)
+    return test_accuracy
 
 
 if __name__ == '__main__':
