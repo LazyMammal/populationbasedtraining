@@ -17,7 +17,7 @@ def main(args):
 
     workers = build_workers(args.popsize)
     tf.reset_default_graph()
-    train_workers(workers, dataset, args.train_time)
+    train_workers(workers, dataset, args.train_time, args.steps)
     print('total time %3.1f' % main_time.elapsed())
 
 
@@ -39,13 +39,13 @@ def build_workers(popsize):
     return workers
 
 
-def train_workers(workers, dataset, train_time):
+def train_workers(workers, dataset, train_time, training_steps):
     batch_size = 100
     test_size = 1000
     learn_rate = 0.01
 
     with tf.Session() as sess:
-        for step in range(2):
+        for step in range(1, training_steps+1):
             for wid, name in enumerate(workers):
                 saver2 = tf.train.import_meta_graph(name + '.meta')
                 saver2.restore(sess, name)
@@ -92,6 +92,8 @@ if __name__ == '__main__':
                         default=10, help="number of workers (10)")
     parser.add_argument('--train_time', nargs='?', type=float,
                         default=10.0, help="training time per worker per step (10.0s)")
+    parser.add_argument('--steps', nargs='?', type=int,
+                        default=10, help="number of training steps (10)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
                         default='mnist', help='name of dataset')
     main(parser.parse_args())
