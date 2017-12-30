@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import sys
 import argparse
-from importlib import import_module
 
 import numpy as np
 import tensorflow as tf
@@ -12,9 +11,7 @@ import mnist
 
 def main(args):
     dataset = mnist.get_dataset(args.dataset)
-    modelmodule = import_module(args.model)
-    lossmodule = import_module(args.loss)
-    mnist.gen_model(modelmodule, lossmodule)
+    mnist.gen_model(args.model, args.loss)
 
     workers = build_workers(args.popsize)
     tf.reset_default_graph()
