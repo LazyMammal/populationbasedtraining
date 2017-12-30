@@ -36,18 +36,19 @@ def main():
                 saver.restore(sess, name)
                 print('step %d, ' % step, end='')
                 print('worker %d, ' % wid, end='')
-                train_graph(sess, batch_size, learn_rate, dataset, *model)
+                train_graph(sess, 3.0, batch_size, learn_rate, dataset, *model)
                 saver.save(sess, name)
             print('step time %g' % main_time.split())
 
         print('total time %g' % main_time.elapsed())
 
 
-def train_graph(sess, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
+def train_graph(sess, train_time, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     batch_time = Timer()
-    batch_iterations = 100
-    mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
-                           dataset, x, y_, train_step, learning_rate)
+    batch_iterations = 10
+    while batch_time.elapsed() < train_time:
+        mnist.iterate_training(sess, batch_iterations, batch_size, learn_rate,
+                               dataset, x, y_, train_step, learning_rate)
     batch_xs, batch_ys = dataset.train.next_batch(batch_size)
     train_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     batch_xs, batch_ys = dataset.test.next_batch(batch_size)
