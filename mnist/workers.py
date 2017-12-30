@@ -13,7 +13,7 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     modelmodule = import_module(args.model)
     lossmodule = import_module(args.loss)
-    model = mnist.gen_model(modelmodule, lossmodule)
+    mnist.gen_model(modelmodule, lossmodule)
 
     workers = build_workers(args.popsize)
     tf.reset_default_graph()
