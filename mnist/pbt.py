@@ -35,3 +35,11 @@ def truncate_pop(workers, cutoff=0.2, dup_all=True, explore_fun=None):
             dup_hparams(worst, best)
         if explore_fun:
             explore_fun(worst)
+
+
+def perturb(hparam, min_=0.0, max_=1.0, scale=[0.9, 1.1]):
+    return np.clip(hparam * randbeta(*scale), min_, max_)
+
+
+def randbeta(min_=0, max_=1, a=0.2, b=0.2):
+    return min_ + (max_ - min_) * np.random.beta(a, b)

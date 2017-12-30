@@ -56,19 +56,11 @@ def resample_batchsize():
 
 
 def perturb_learnrate(learnrate):
-    return perturb(learnrate, 0.0, 0.1)
+    return pbt.perturb(learnrate, 0.0, 0.1)
 
 
 def perturb_batchsize(batchsize):
-    return int(perturb(batchsize / 10.0, 1, 100) * 10)
-
-
-def perturb(hparam, min_=0.0, max_=1.0, scale=[0.5, 2.0]):
-    return np.clip(hparam * randbeta(*scale), min_, max_)
-
-
-def randbeta(min_=0, max_=1, a=0.2, b=0.2):
-    return min_ + (max_ - min_) * np.random.beta(a, b)
+    return int(pbt.perturb(batchsize / 10.0, 1, 100) * 10)
 
 
 def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
