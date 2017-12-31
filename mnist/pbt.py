@@ -2,11 +2,13 @@ from __future__ import print_function
 
 import numpy as np
 import copy
+from timer import Timer
 
 
 def pbt(workers, cutoff=0.2):
-    print('pbt:', len(workers), 'workers')
+    pbt_time = Timer()
     truncate_pop(workers, cutoff, explore_fun=perturb_hparams)
+    print('pbt: %d workers %3.1fs' % (len(workers), pbt_time.elapsed()))
 
 
 def dup_hparams(dest, source):
