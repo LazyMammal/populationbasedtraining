@@ -65,22 +65,36 @@ def perturb_batchsize(batchsize):
 
 def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
     step_time = Timer()
+    io_accum = 0.0
+    for step in range(1, training_steps + 1):
+        for worker in workers:
+            print('step %d, ' % step, end='')
+            io_accum += train_worker(worker, train_time, test_size)
+        if step_callback:
+            step_callback(workers)
+        print('step time %3.1fs, ' % step_time.split(), end='')
+        print('io time %3.1fs' % io_accum)
+
+
+def train_worker(worker, train_time, test_size):
+    io_time = Timer()
+    io_accum = 0.0
+    tf.reset_default_graph()
     with tf.Session() as sess:
-        for step in range(1, training_steps + 1):
-            for worker in workers:
-                name = worker['dup_from_name'] or worker['name']
-                saver2 = tf.train.import_meta_graph(name + '.meta')
-                saver2.restore(sess, name)
-                worker['dup_from_name'] = None
-                print('step %d, ' % step, end='')
-                print('worker %d, ' % worker['id'], end='')
-                score = train_graph(sess, train_time, worker['hparams'][1],
-                                    test_size, worker['hparams'][0], worker['dataset'])
-                worker['score'] = score
-                saver2.save(sess, worker['name'])
-            if step_callback:
-                step_callback(workers)
-            print('step time %3.1f' % step_time.split())
+        io_time.split()
+        name = worker['dup_from_name'] or worker['name']
+        saver2 = tf.train.import_meta_graph(name + '.meta')
+        saver2.restore(sess, name)
+        worker['dup_from_name'] = None
+        io_accum += io_time.split()
+        print('worker %d, ' % worker['id'], end='')
+        score = train_graph(sess, train_time, worker['hparams'][1],
+                            test_size, worker['hparams'][0], worker['dataset'])
+        worker['score'] = score
+        io_time.split()
+        saver2.save(sess, worker['name'])
+        io_accum += io_time.split()
+    return io_accum
 
 
 def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
