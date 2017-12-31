@@ -66,8 +66,8 @@ def perturb_batchsize(batchsize):
 
 def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
     step_time = Timer()
-    io_accum = 0.0
     for step in range(1, training_steps + 1):
+        io_accum = 0.0
         for worker in workers:
             print('step %d, ' % step, end='')
             io_accum += train_worker(worker, train_time, test_size)
