@@ -1,3 +1,4 @@
 input_data/
 ckpt/
+csv/
 *.log
