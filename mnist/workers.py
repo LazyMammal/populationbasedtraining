@@ -105,9 +105,11 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     print('learning rate %3.3g, ' % learn_rate, end='')
     print('batch size %d, ' % batch_size, end='')
 
-    trainscore = test_accuracy(sess, dataset.train, test_size,
-                               x, y_, accuracy, True)
-    testscore = test_accuracy(sess, dataset.test, test_size, x, y_, accuracy)
+    testdata_size = len(dataset.test.labels)
+    trainscore = test_accuracy(
+        sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
+    testscore = test_accuracy(
+        sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
 
     print('train %3.3f, ' % trainscore, end='')
     print('test %3.3f (%3.1fs)' % (testscore, batch_time.split()))
@@ -115,10 +117,10 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     return testscore
 
 
-def test_accuracy(sess, dataset, test_size, x, y_, accuracy, shuffle=False):
+def test_accuracy(sess, dataset, test_size, batch_size, x, y_, accuracy, shuffle=False):
     scores = []
-    for _ in range(len(dataset.labels) // test_size):
-        batch_xs, batch_ys = dataset.next_batch(test_size, shuffle=shuffle)
+    for _ in range(test_size // batch_size):
+        batch_xs, batch_ys = dataset.next_batch(batch_size, shuffle=shuffle)
         scores.append(sess.run(accuracy, feed_dict={
                       x: batch_xs, y_: batch_ys}))
     return np.mean(scores)
