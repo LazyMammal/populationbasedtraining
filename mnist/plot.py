@@ -35,7 +35,7 @@ def gridplot(steporder, gridshape=(7,7)):
         y = np.log(np.reshape(step[:, 2], gridshape))
         z = np.reshape(step[:, 5], gridshape)
         print(z)
-        ax.plot_wireframe(x, y, z)
+        ax.plot_wireframe(x, y, z, alpha=0.85)
     plt.show()
 
 
