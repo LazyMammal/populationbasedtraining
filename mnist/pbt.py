@@ -8,7 +8,7 @@ from timer import Timer
 def pbt(workers, cutoff=0.2):
     pbt_time = Timer()
     truncate_pop(workers, cutoff, explore_fun=perturb_hparams)
-    print('pbt: %d workers %3.1fs' % (len(workers), pbt_time.elapsed()))
+    # print('# pbt: %d workers %3.1fs' % (len(workers), pbt_time.elapsed()))
 
 
 def dup_hparams(dest, source):

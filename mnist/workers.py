@@ -15,13 +15,15 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
+    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
+
     workers = build_workers(args.popsize, dataset,
                             [resample_learnrate, resample_batchsize],
                             [perturb_learnrate, perturb_batchsize])
 
     train_workers(workers, args.train_time, args.steps, pbt.pbt)
 
-    print('total time %3.1f' % main_time.elapsed())
+    # print('# total time %3.1f' % main_time.elapsed())
 
 
 def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
@@ -42,8 +44,8 @@ def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
                       'dataset': dataset}
             workers.append(worker)
 
-            print('worker (%d) setup time %3.1f' % (i, build_time.split()))
-        print('total setup time %3.1f' % build_time.elapsed())
+            # print('# worker (%d) setup time %3.1f' % (i, build_time.split()))
+        # print('# total setup time %3.1f' % build_time.elapsed())
     sess.close()
     return workers
 
@@ -69,12 +71,12 @@ def train_workers(workers, train_time, training_steps, step_callback=None, test_
     for step in range(1, training_steps + 1):
         io_accum = 0.0
         for worker in workers:
-            print('step %d, ' % step, end='')
+            print('%d, ' % step, end='')
             io_accum += train_worker(worker, train_time, test_size)
         if step_callback:
             step_callback(workers)
-        print('step time %3.1fs, ' % step_time.split(), end='')
-        print('io time %3.1fs' % io_accum)
+        # print('# step time %3.1fs, ' % step_time.split(), end='')
+        # print('# io time %3.1fs' % io_accum)
 
 
 def train_worker(worker, train_time, test_size):
@@ -88,7 +90,7 @@ def train_worker(worker, train_time, test_size):
         saver2.restore(sess, name)
         worker['dup_from_name'] = None
         io_accum += io_time.split()
-        print('worker %d, ' % worker['id'], end='')
+        print('%d, ' % worker['id'], end='')
         score = train_graph(sess, train_time, worker['hparams'][1],
                             test_size, worker['hparams'][0], worker['dataset'])
         worker['score'] = score
@@ -115,10 +117,10 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
         count += 1
         total_iterations += iterations
 
-    print('samples trained %d (%3.1fs) %d, ' %
+    print('%d, %f, %d, ' %
           (total_iterations * batch_size, batch_time.split(), count), end='')
-    print('learning rate %3.3g, ' % learn_rate, end='')
-    print('batch size %d, ' % batch_size, end='')
+    print('%f, ' % learn_rate, end='')
+    print('%d, ' % batch_size, end='')
 
     testdata_size = len(dataset.test.labels)
     trainscore = test_accuracy(
@@ -126,8 +128,9 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     testscore = test_accuracy(
         sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
 
-    print('train %3.3f, ' % trainscore, end='')
-    print('test %3.3f (%3.1fs)' % (testscore, batch_time.split()))
+    print('%f, ' % trainscore, end='')
+    print('%f, ' % testscore, end='')
+    print('%f' % batch_time.split())
 
     return testscore
 
