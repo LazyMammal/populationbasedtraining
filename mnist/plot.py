@@ -14,36 +14,25 @@ def main(args):
     steporder = np.reshape(table, (maxsteps, -1, 6))
     workerorder = np.swapaxes(steporder, 0, 1)
 
-    # mainplots(workerorder)
-    # test_vs_train(workerorder)
-    # test_div_train(workerorder)
+    print(workerorder)
+
+    mainplots(workerorder)
     overfit(workerorder)
 
 def overfit(workerorder):
-    title = '% overfit'
-    plt.title(title)
+    plt.subplot(121)
+    plt.title('% overfit')
     plt.xlabel("steps")
     plt.ylabel("(test - train) / test")
     for worker in workerorder:
         plt.plot(worker[:, 0], ((1-worker[:, 5]) - (1-worker[:, 4])) / (1-worker[:, 5]), alpha=0.5, marker='o')
-    plt.show()
 
-def test_div_train(workerorder):
-    title = 'test / train'
-    plt.title(title)
+    plt.subplot(122)
+    plt.title('test / train')
     plt.xlabel("steps")
     plt.ylabel("test / train")
     for worker in workerorder:
         plt.plot(worker[:, 0], (1-worker[:, 5]) / (1-worker[:, 4]), alpha=0.5, marker='o')
-    plt.show()
-
-def test_vs_train(workerorder):
-    title = 'test vs train'
-    plt.title(title)
-    plt.xlabel("train")
-    plt.ylabel("test")
-    for worker in workerorder:
-        plt.plot(1-worker[:, 4], 1-worker[:, 5], alpha=0.5, marker='o')
     plt.show()
 
 def mainplots(workerorder):
