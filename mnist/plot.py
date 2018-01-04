@@ -5,6 +5,7 @@ import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as p3
 
 
 def main(args):
@@ -12,12 +13,31 @@ def main(args):
     maxsteps  = int(max(np.array(table)[:, 0]))
     maxworker = int(max(np.array(table)[:, 1]) + 1)
     workerorder = np.reshape(table[np.lexsort((table[:,0],table[:,1]))], (maxworker, -1, 6))
+    steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
 
     if args.logplot:
         mainplots(workerorder, [None, None, None, 2])
     else:
         mainplots(workerorder)
     overfit(workerorder)
+    gridplot(steporder)
+
+
+def gridplot(steporder, gridshape=(7,7)):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.view_init(azim=-135, elev=45)
+    ax.set_xlabel('log(batch size)')
+    ax.set_ylabel('log(learn rate)')
+    ax.set_zlabel('test accuracy')
+    for step in steporder:
+        x = np.log(np.reshape(step[:, 3], gridshape))
+        y = np.log(np.reshape(step[:, 2], gridshape))
+        z = np.reshape(step[:, 5], gridshape)
+        print(z)
+        ax.plot_wireframe(x, y, z)
+    plt.show()
+
 
 def overfit(workerorder):
     plt.subplot(121)
