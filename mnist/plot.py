@@ -11,10 +11,7 @@ def main(args):
     table = np.loadtxt(args.file, delimiter=',', usecols=(0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
     maxsteps  = int(max(np.array(table)[:, 0]))
     maxworker = int(max(np.array(table)[:, 1]) + 1)
-    steporder = np.reshape(table, (maxsteps, -1, 6))
-    workerorder = np.swapaxes(steporder, 0, 1)
-
-    print(workerorder)
+    workerorder = np.reshape(table[np.lexsort((table[:,0],table[:,1]))], (maxworker, -1, 6))
 
     mainplots(workerorder)
     overfit(workerorder)
