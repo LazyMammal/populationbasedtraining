@@ -23,7 +23,7 @@ def main(args):
 
     train_workers(workers, args.train_time, args.steps, pbt.pbt)
 
-    # print('# total time %3.1f' % main_time.elapsed())
+    print('# total time %3.1f' % main_time.elapsed())
 
 
 def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
@@ -45,7 +45,7 @@ def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
             workers.append(worker)
 
             # print('# worker (%d) setup time %3.1f' % (i, build_time.split()))
-        # print('# total setup time %3.1f' % build_time.elapsed())
+        print('# total setup time %3.1f' % build_time.elapsed())
     sess.close()
     return workers
 
@@ -75,8 +75,8 @@ def train_workers(workers, train_time, training_steps, step_callback=None, test_
             io_accum += train_worker(worker, train_time, test_size)
         if step_callback:
             step_callback(workers)
-        # print('# step time %3.1fs, ' % step_time.split(), end='')
-        # print('# io time %3.1fs' % io_accum)
+        print('# step time %3.1fs, ' % step_time.split(), end='')
+        print('# io time %3.1fs' % io_accum)
 
 
 def train_worker(worker, train_time, test_size):
