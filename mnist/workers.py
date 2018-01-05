@@ -95,7 +95,7 @@ def train_worker(worker, train_time, test_size):
         print('%d, ' % worker['id'], end='')
         score = train_graph(sess, train_time, worker['hparams'][1],
                             test_size, worker['hparams'][0], worker['dataset'])
-        worker['score'] = overfit_score(*score)
+        worker['score'] = 1.0 - overfit_score(*score)
         io_time.split()
         saver2.save(sess, worker['name'])
         io_accum += io_time.split()
