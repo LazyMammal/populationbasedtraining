@@ -36,7 +36,13 @@ def make_model(x, y_):
     
     # --> [batch, 1024]
     dense = tf.layers.dense(pool2_flat, 1024, tf.nn.relu)
-    dropout = tf.layers.dropout(dense, rate=0.4, training=True)
+
+    # dropout
+    dropout_rate = tf.placeholder_with_default(tf.constant(0.4, dtype=tf.float32), shape=[])
+    dropout_bool = tf.placeholder_with_default(tf.constant(True, dtype=tf.bool), shape=[])
+    tf.add_to_collection('dropout_rate', dropout_rate)
+    tf.add_to_collection('dropout_bool', dropout_bool)
+    dropout = tf.layers.dropout(dense, rate=dropout_rate, training=dropout_bool)
 
     # --> [batch, output_size]
     logits = tf.layers.dense(dropout, output_size)

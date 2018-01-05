@@ -89,13 +89,20 @@ def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, trai
 
 
 def test_session(sess, batch_size, dataset, x, y_, accuracy):
+    dropout_collection = tf.get_collection('dropout_bool')
     test_size = len(dataset.test.labels)
     print('test cases %d, ' % test_size, end='')
     acc = []
     count = 0
     for _ in range(int(test_size / batch_size)):
         batch_xs, batch_ys = dataset.test.next_batch(batch_size, shuffle=False)
-        acc.append(sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys}))
+        if dropout_collection:
+            dropout_bool = dropout_collection[0]
+            acc.append(sess.run(accuracy, feed_dict={
+                       x: batch_xs, y_: batch_ys, dropout_bool: False}))
+        else:
+            acc.append(sess.run(accuracy, feed_dict={
+                       x: batch_xs, y_: batch_ys}))
         count += len(batch_ys)
     print('test accuracy %g (%d)' % (np.mean(acc), count))
 
