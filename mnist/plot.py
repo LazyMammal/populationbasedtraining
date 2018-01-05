@@ -62,7 +62,6 @@ def gridplot(steporder, gridshape=(7, 7)):
         x = np.log(np.reshape(step[:, 3], gridshape))
         y = np.log(np.reshape(step[:, 2], gridshape))
         z = np.reshape(step[:, 5], gridshape)
-        print(z)
         ax.plot_wireframe(x, y, z, alpha=0.85)
     plt.show()
 
@@ -72,6 +71,8 @@ def overfit(workerorder):
     plt.title('% overfit')
     plt.xlabel("steps")
     plt.ylabel("(test - train) / test")
+    plt.ylim(0.0, 1.0)
+
     for worker in workerorder:
         plt.plot(worker[:, 0], ((1-worker[:, 5]) - (1-worker[:, 4])) / (1-worker[:, 5]), alpha=0.5, marker='o')
 
