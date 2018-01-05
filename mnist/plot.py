@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
+from overfit_score import overfit_score
+
 
 def main(args):
     table = np.loadtxt(args.file, delimiter=',', usecols=(0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
@@ -87,7 +89,7 @@ def overfit(workerorder):
     plt.ylim(0.0, 1.0)
 
     for worker in workerorder:
-        plt.plot(worker[:, 0], ((1-worker[:, 5]) - (1-worker[:, 4])) / (1-worker[:, 5]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], overfit_score(worker[:, 5], worker[:, 4]), alpha=0.5, marker='o')
 
     plt.subplot(122)
     plt.title('test / train')
