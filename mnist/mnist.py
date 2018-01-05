@@ -9,6 +9,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from timer import Timer
+from test_accuracy import test_accuracy
 
 
 def main(args):
@@ -70,7 +71,10 @@ def run_session(iterations, batch_size, learn_rate, dataset, x, y_, train_step, 
         sess.run(tf.global_variables_initializer())
         train_session(sess, iterations, batch_size, learn_rate,
                       dataset, x, y_, train_step, learning_rate, accuracy)
-        test_session(sess, batch_size, dataset, x, y_, accuracy)
+        test_size = len(dataset.test.labels)
+        test_score = test_accuracy(sess, dataset.test, test_size, batch_size, x, y_, accuracy)
+        print('test cases %d, ' % test_size, end='')
+        print('test accuracy %g' % test_score)
 
 
 def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
@@ -86,25 +90,6 @@ def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, trai
         print('training accuracy %g' % train_accuracy)
         iterate_training(sess, batch_iterations, batch_size, learn_rate,
                          dataset, x, y_, train_step, learning_rate)
-
-
-def test_session(sess, batch_size, dataset, x, y_, accuracy):
-    dropout_collection = tf.get_collection('dropout_bool')
-    test_size = len(dataset.test.labels)
-    print('test cases %d, ' % test_size, end='')
-    acc = []
-    count = 0
-    for _ in range(int(test_size / batch_size)):
-        batch_xs, batch_ys = dataset.test.next_batch(batch_size, shuffle=False)
-        if dropout_collection:
-            dropout_bool = dropout_collection[0]
-            acc.append(sess.run(accuracy, feed_dict={
-                       x: batch_xs, y_: batch_ys, dropout_bool: False}))
-        else:
-            acc.append(sess.run(accuracy, feed_dict={
-                       x: batch_xs, y_: batch_ys}))
-        count += len(batch_ys)
-    print('test accuracy %g (%d)' % (np.mean(acc), count))
 
 
 if __name__ == '__main__':
