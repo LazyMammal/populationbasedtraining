@@ -36,6 +36,7 @@ def search_grid(dataset, popsize, train_time, training_steps, test_size=1000):
                                 batch_size, learn_rate)
                 worker += 1
 
+
 def train_graph(sess, dataset, train_time, test_size, batch_size, learn_rate):
     train_step = tf.get_collection('train_step')[0]
     x = tf.get_collection('x')[0]
