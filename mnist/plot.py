@@ -15,10 +15,12 @@ def main(args):
     workerorder = np.reshape(table[np.lexsort((table[:,0],table[:,1]))], (maxworker, -1, 6))
     steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
 
-    if args.logplot:
-        mainplots(workerorder, [None, None, None, 2])
-    else:
-        mainplots(workerorder)
+    plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
+    plotcompare(workerorder, yaxis={'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
+    plotcompare(workerorder, yaxis={'col': 3, 'label': 'batch size'}, plotnum=223)
+    plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate', 'scale': 'log' if args.logplot else None}, plotnum=224)
+    plt.show()
+
     overfit(workerorder)
     gridplot(steporder)
 
@@ -75,19 +77,6 @@ def overfit(workerorder):
     plt.ylabel("test / train")
     for worker in workerorder:
         plt.plot(worker[:, 0], (1-worker[:, 5]) / (1-worker[:, 4]), alpha=0.5, marker='o')
-    plt.show()
-
-
-def mainplots(workerorder, logargs=[None, None, None, None], yscaleargs=[(0.0,1.0),(0.0,1.0),None,None]):
-    for col, title, plotnum, logplot, yscale in [(a, b, c, d, e) for (a, b, c), d, e in zip([(5, 'test accuracy', 221), (4, 'train accuracy', 222), (3, 'batch size', 223), (2, 'learning rate', 224)], logargs, yscaleargs)]:
-        plt.subplot(plotnum)
-        if not logplot is None:
-            plt.semilogy(logplot)
-        if not yscale is None:
-            plt.ylim(*yscale)
-        plt.title(title)
-        for worker in workerorder:
-            plt.plot(worker[:, 0], worker[:, col], alpha=0.5)
     plt.show()
 
 
