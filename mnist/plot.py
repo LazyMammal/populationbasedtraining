@@ -10,10 +10,10 @@ import mpl_toolkits.mplot3d.axes3d as p3
 
 def main(args):
     table = np.loadtxt(args.file, delimiter=',', usecols=(0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
-    maxsteps  = int(max(np.array(table)[:, 0]))
-    maxworker = int(max(np.array(table)[:, 1]) + 1)
-    workerorder = np.reshape(table[np.lexsort((table[:,0],table[:,1]))], (maxworker, -1, 6))
-    steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
+    # maxsteps  = int(max(np.array(table)[:, 0]))
+    # steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
+    # gridplot(steporder)
+    workerorder = group_by_worker(table)
 
     plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
     plotcompare(workerorder, yaxis={'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
@@ -22,11 +22,24 @@ def main(args):
     plt.show()
 
     overfit(workerorder)
-    gridplot(steporder)
 
     plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate', 'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
     plt.show()
+
+
+def group_by_worker(table):
+    workerorder = []
+    workerblock = []
+    wid = None
+    for row in table[np.lexsort((table[:,0],table[:,1]))]:
+        if workerblock and wid != row[1]:
+            workerorder.append(np.array(workerblock))
+            workerblock = []
+        wid = row[1]
+        workerblock.append(np.array(row))
+    workerorder.append(np.array(workerblock))
+    return workerorder
 
 
 def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=None):
