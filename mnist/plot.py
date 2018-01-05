@@ -24,8 +24,8 @@ def main(args):
     overfit(workerorder)
     gridplot(steporder)
 
-    plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log'}, plotnum=121)
-    plotcompare(workerorder, {'col': 2, 'label': 'learning rate', 'scale': 'log', 'reverse': True}, plotnum=122)
+    plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
+    plotcompare(workerorder, {'col': 2, 'label': 'learning rate', 'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
     plt.show()
 
 
@@ -38,10 +38,14 @@ def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5,
         plt.xlim(*xaxis['limit'])
     if 'limit' in yaxis:
         plt.ylim(*yaxis['limit'])
-    if 'scale' in xaxis:
+    if 'scale' in xaxis and xaxis['scale']:
         plt.xscale(xaxis['scale'])
+    if 'scale' in yaxis and yaxis['scale']:
+        plt.yscale(yaxis['scale'])
     if 'reverse' in xaxis:
         plt.gca().invert_xaxis()
+    if 'reverse' in yaxis:
+        plt.gca().invert_yaxis()
     for worker in workerorder:
         plt.plot(worker[:, xaxis['col']],
                  worker[:, yaxis['col']], alpha=0.5, marker='o')
