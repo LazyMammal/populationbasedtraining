@@ -11,22 +11,29 @@ from overfit_score import overfit_score
 
 
 def main(args):
-    table = np.loadtxt(args.file, delimiter=',', usecols=(0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
+    table = np.loadtxt(args.file, delimiter=',', usecols=(
+        0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
     # maxsteps  = int(max(np.array(table)[:, 0]))
     # steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
     # gridplot(steporder)
     workerorder = group_by_worker(table)
 
-    plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
-    plotcompare(workerorder, yaxis={'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
-    plotcompare(workerorder, yaxis={'col': 3, 'label': 'batch size'}, plotnum=223)
-    plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate', 'scale': 'log' if args.logplot else None}, plotnum=224)
+    plotcompare(workerorder, yaxis={
+                'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
+    plotcompare(workerorder, yaxis={
+                'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
+    plotcompare(workerorder, yaxis={
+                'col': 3, 'label': 'batch size'}, plotnum=223)
+    plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
+                                    'scale': 'log' if args.logplot else None}, plotnum=224)
     plt.show()
 
     overfit(workerorder)
 
-    plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
-    plotcompare(workerorder, {'col': 2, 'label': 'learning rate', 'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
+    plotcompare(workerorder, {'col': 3, 'label': 'batch size',
+                              'scale': 'log' if args.logplot else None}, plotnum=121)
+    plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
+                              'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
     plt.show()
 
 
