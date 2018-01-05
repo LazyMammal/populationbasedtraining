@@ -22,6 +22,27 @@ def main(args):
     overfit(workerorder)
     gridplot(steporder)
 
+    plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log'}, plotnum=121)
+    plotcompare(workerorder, {'col': 2, 'label': 'learning rate', 'scale': 'log', 'reverse': True}, plotnum=122)
+    plt.show()
+
+
+def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=None):
+    if not plotnum is None:
+        plt.subplot(plotnum)
+    plt.xlabel(xaxis['label'])
+    plt.ylabel(yaxis['label'])
+    if 'limit' in xaxis:
+        plt.xlim(*xaxis['limit'])
+    if 'limit' in yaxis:
+        plt.ylim(*yaxis['limit'])
+    if 'scale' in xaxis:
+        plt.xscale(xaxis['scale'])
+    if 'reverse' in xaxis:
+        plt.gca().invert_xaxis()
+    for worker in workerorder:
+        plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
+
 
 def gridplot(steporder, gridshape=(7,7)):
     fig = plt.figure()
