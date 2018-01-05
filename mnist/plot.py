@@ -29,6 +29,7 @@ def main(args):
     plt.show()
 
     overfit(workerorder)
+    PQ(workerorder)
 
     plotcompare(workerorder, {'col': 3, 'label': 'batch size',
                               'scale': 'log' if args.logplot else None}, plotnum=121)
@@ -37,16 +38,27 @@ def main(args):
     plt.show()
 
 
-def group_by_worker(table):
+def group_by_worker(table, bestcol=(4, 5), avgcol=(4, 5), decay=0.5):
     workerorder = []
     workerblock = []
+    best = []
+    avg = np.array([])
     wid = None
-    for row in table[np.lexsort((table[:,0],table[:,1]))]:
+    for row in table[np.lexsort((table[:, 0], table[:, 1]))]:
         if workerblock and wid != row[1]:
             workerorder.append(np.array(workerblock))
             workerblock = []
+            best = []
+            avg = np.array([])
+        if not len(best):
+            best = [row[col] for col in bestcol]
+        if not len(avg):
+            avg = [row[col] for col in avgcol]
         wid = row[1]
-        workerblock.append(np.array(row))
+        best = np.fmax(best, [row[col] for col in bestcol])
+        avg = np.array(avg) * decay
+        avg += np.array([row[col] for col in avgcol]) * (1.0 - decay)
+        workerblock.append(np.append(np.array(row), [best, avg]))
     workerorder.append(np.array(workerblock))
     return workerorder
 
@@ -94,16 +106,45 @@ def overfit(workerorder):
     plt.xlabel("steps")
     plt.ylabel("(test - train) / test")
     plt.ylim(0.0, 1.0)
-
     for worker in workerorder:
-        plt.plot(worker[:, 0], overfit_score(worker[:, 5], worker[:, 4]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], overfit_score(
+            worker[:, 5], worker[:, 4]), alpha=0.5, marker='o')
 
     plt.subplot(122)
     plt.title('test / train')
     plt.xlabel("steps")
     plt.ylabel("test / train")
     for worker in workerorder:
-        plt.plot(worker[:, 0], (1-worker[:, 5]) / (1-worker[:, 4]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], (1 - worker[:, 5]) /
+                 (1 - worker[:, 4]), alpha=0.5, marker='o')
+    plt.show()
+
+
+def PQ(workerorder):
+    plt.subplot(223)
+    plt.title('GL - General Loss (filtered)')
+    plt.xlabel("steps")
+    plt.ylabel("avg(test) / best(test)")
+    for worker in workerorder:
+        plt.plot(worker[:, 0], (1 - worker[:, 9]) /
+                 (1 - worker[:, 7]), alpha=0.5, marker='o')
+
+    plt.subplot(224)
+    plt.title('P - Progress (filtered)')
+    plt.xlabel("steps")
+    plt.ylabel("avg(train) / best(train)")
+    for worker in workerorder:
+        plt.plot(worker[:, 0], (1 - worker[:, 8]) /
+                 (1 - worker[:, 6]), alpha=0.5, marker='o')
+
+    plt.subplot(221)
+    plt.title('PQ - Generality to Progress Ratio')
+    plt.xlabel("steps")
+    plt.ylabel("GL / P")
+    for worker in workerorder:
+        plt.plot(worker[:, 0], (1 - worker[:, 9]) /
+                 (1 - worker[:, 7]) / ((1 - worker[:, 8]) /
+                                       (1 - worker[:, 6])), alpha=0.5, marker='o')
     plt.show()
 
 
