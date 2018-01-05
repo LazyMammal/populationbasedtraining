@@ -52,7 +52,7 @@ def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
 
 
 def resample_learnrate():
-    return 2.0**np.log(np.random.lognormal() / 10.0) / 100.0
+    return 2.0**(-3 -15*np.random.random())
 
 
 def resample_batchsize():
