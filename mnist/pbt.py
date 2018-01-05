@@ -5,9 +5,9 @@ import copy
 from timer import Timer
 
 
-def pbt(workers, cutoff=0.2):
+def pbt(workers, cutoff=0.2, popshrink=1.0):
     # pbt_time = Timer()
-    truncate_pop(workers, cutoff, explore_fun=perturb_hparams)
+    truncate_pop(workers, cutoff, popshrink, explore_fun=perturb_hparams)
     # print('# pbt: %d workers %3.1fs' % (len(workers), pbt_time.elapsed()))
 
 
@@ -29,11 +29,13 @@ def perturb_hparams(worker):
         worker['perturb'], worker['hparams'])]
 
 
-def truncate_pop(workers, cutoff=0.2, dup_all=True, explore_fun=None):
+def truncate_pop(workers, cutoff=0.2, popshrink=1.0, dup_all=True, explore_fun=None):
     max_id = max([w['id'] for w in workers])
-    ranked = sorted(workers, key=lambda worker: worker['score'], reverse=True)
-    index = int(cutoff * len(ranked))
-    for best, worst in zip(ranked[:index], ranked[-index:]):
+    workers.sort(key=lambda worker: worker['score'], reverse=True)
+    popsize = int(popshrink * len(workers))
+    workers[popsize:] = []
+    index = int(cutoff * len(workers))
+    for best, worst in zip(workers[:index], workers[-index:]):
         max_id += 1
         dup_weights(worst, best, max_id)
         if dup_all:
@@ -71,7 +73,8 @@ def main():
             for key in ['name', 'dup_from_name', 'id', 'score', 'hparams', 'dataset']:
                 print(key, worker[key], end=', ')
             print('')
-        pbt(workers, 0.5)
+        print(len(workers), 'workers')
+        pbt(workers, 0.5, 0.5)
 
 
 if __name__ == '__main__':

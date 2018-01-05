@@ -23,7 +23,7 @@ def main(args):
                             [resample_learnrate, resample_batchsize],
                             [perturb_learnrate, perturb_batchsize])
 
-    train_workers(workers, args.train_time, args.steps, pbt.pbt)
+    train_workers(workers, args.train_time, args.steps, args.popshrink, pbt.pbt)
 
     print('# total time %3.1f' % main_time.elapsed())
 
@@ -68,7 +68,7 @@ def perturb_batchsize(batchsize):
     return int(pbt.perturb(batchsize / 10.0, 1, 100) * 10)
 
 
-def train_workers(workers, train_time, training_steps, step_callback=None, test_size=1000):
+def train_workers(workers, train_time, training_steps, popshrink=1.0, step_callback=None, test_size=1000):
     step_time = Timer()
     for step in range(1, training_steps + 1):
         io_accum = 0.0
@@ -76,7 +76,7 @@ def train_workers(workers, train_time, training_steps, step_callback=None, test_
             print('%d, ' % step, end='')
             io_accum += train_worker(worker, train_time, test_size)
         if step_callback:
-            step_callback(workers)
+            step_callback(workers, popshrink=popshrink)
         print('# step time %3.1fs, ' % step_time.split(), end='')
         print('# io time %3.1fs' % io_accum)
 
@@ -145,6 +145,8 @@ if __name__ == '__main__':
                         default="softmax", help="tensorflow loss")
     parser.add_argument('--popsize', nargs='?', type=int,
                         default=10, help="number of workers (10)")
+    parser.add_argument('--popshrink', nargs='?', type=float,
+                        default=1.0, help="fraction of population to keep after each step (1.0)")
     parser.add_argument('--train_time', nargs='?', type=float,
                         default=10.0, help="training time per worker per step (10.0s)")
     parser.add_argument('--steps', nargs='?', type=int,
