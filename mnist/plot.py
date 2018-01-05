@@ -41,10 +41,11 @@ def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5,
     if 'reverse' in xaxis:
         plt.gca().invert_xaxis()
     for worker in workerorder:
-        plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
+        plt.plot(worker[:, xaxis['col']],
+                 worker[:, yaxis['col']], alpha=0.5, marker='o')
 
 
-def gridplot(steporder, gridshape=(7,7)):
+def gridplot(steporder, gridshape=(7, 7)):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(azim=-135, elev=45)
