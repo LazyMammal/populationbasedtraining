@@ -9,6 +9,7 @@ from timer import Timer
 import mnist
 import pbt
 from test_accuracy import test_accuracy
+from overfit_score import overfit_score
 
 
 def main(args):
@@ -94,7 +95,7 @@ def train_worker(worker, train_time, test_size):
         print('%d, ' % worker['id'], end='')
         score = train_graph(sess, train_time, worker['hparams'][1],
                             test_size, worker['hparams'][0], worker['dataset'])
-        worker['score'] = score
+        worker['score'] = overfit_score(*score)
         io_time.split()
         saver2.save(sess, worker['name'])
         io_accum += io_time.split()
@@ -133,7 +134,7 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
     print('%f, ' % testscore, end='')
     print('%f' % batch_time.split())
 
-    return testscore
+    return (trainscore, testscore)
 
 
 if __name__ == '__main__':
