@@ -26,6 +26,7 @@ def main(args):
                 'col': 3, 'label': 'batch size'}, plotnum=223)
     plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
                                     'scale': 'log' if args.logplot else None}, plotnum=224)
+    adjust_plots()
     plt.show()
 
     overfit(workerorder)
@@ -35,6 +36,7 @@ def main(args):
                               'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
                               'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
+    adjust_plots()
     plt.show()
 
 
@@ -117,6 +119,7 @@ def overfit(workerorder):
     for worker in workerorder:
         plt.plot(worker[:, 0], (1 - worker[:, 5]) /
                  (1 - worker[:, 4]), alpha=0.5, marker='o')
+    adjust_plots()
     plt.show()
 
 
@@ -145,7 +148,13 @@ def PQ(workerorder):
         plt.plot(worker[:, 0], (1 - worker[:, 9]) /
                  (1 - worker[:, 7]) / ((1 - worker[:, 8]) /
                                        (1 - worker[:, 6])), alpha=0.5, marker='o')
+    adjust_plots()
     plt.show()
+
+
+def adjust_plots(left=.1, bottom=.1, right=.97, top=.95, wspace=.33, hspace=.45):
+    plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top,
+                        wspace=wspace, hspace=hspace)
 
 
 if __name__ == '__main__':
