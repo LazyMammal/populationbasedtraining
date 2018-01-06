@@ -5,9 +5,9 @@ import copy
 from timer import Timer
 
 
-def pbt(workers, cutoff=0.2, popshrink=1.0):
+def pbt(workers, cutoff=0.2, popshrink=1.0, dup_all=True):
     # pbt_time = Timer()
-    truncate_pop(workers, cutoff, popshrink, explore_fun=perturb_hparams)
+    truncate_pop(workers, cutoff, popshrink, dup_all, explore_fun=perturb_hparams)
     # print('# pbt: %d workers %3.1fs' % (len(workers), pbt_time.elapsed()))
 
 
@@ -37,9 +37,9 @@ def truncate_pop(workers, cutoff=0.2, popshrink=1.0, dup_all=True, explore_fun=N
     index = int(cutoff * len(workers))
     for best, worst in zip(workers[:index], workers[-index:]):
         max_id += 1
-        dup_weights(worst, best, max_id)
+        dup_hparams(worst, best)
         if dup_all:
-            dup_hparams(worst, best)
+            dup_weights(worst, best, max_id)
         if explore_fun:
             explore_fun(worst)
 
