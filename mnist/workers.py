@@ -10,7 +10,7 @@ import mnist
 import pbt
 from test_accuracy import test_accuracy
 from overfit_score import overfit_score
-import hparams
+import hparams as hp
 
 
 def main(args):
@@ -21,10 +21,8 @@ def main(args):
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
 
     workers = build_workers(args.popsize, dataset,
-                            [hparams.resample_learnrate,
-                                hparams.resample_batchsize],
-                            [hparams.perturb_learnrate,
-                                hparams.perturb_batchsize])
+                            [hp.resample_learnrate, hp.resample_batchsize],
+                            [hp.perturb_learnrate, hp.perturb_batchsize])
 
     train_workers(workers, args.train_time,
                   args.steps, args.popshrink, pbt.pbt)
