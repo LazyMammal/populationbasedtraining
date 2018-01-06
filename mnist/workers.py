@@ -10,6 +10,7 @@ import mnist
 import pbt
 from test_accuracy import test_accuracy
 from overfit_score import overfit_score
+import hparams
 
 
 def main(args):
@@ -20,10 +21,13 @@ def main(args):
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
 
     workers = build_workers(args.popsize, dataset,
-                            [resample_learnrate, resample_batchsize],
-                            [perturb_learnrate, perturb_batchsize])
+                            [hparams.resample_learnrate,
+                                hparams.resample_batchsize],
+                            [hparams.perturb_learnrate,
+                                hparams.perturb_batchsize])
 
-    train_workers(workers, args.train_time, args.steps, args.popshrink, pbt.pbt)
+    train_workers(workers, args.train_time,
+                  args.steps, args.popshrink, pbt.pbt)
 
     print('# total time %3.1f' % main_time.elapsed())
 
@@ -50,22 +54,6 @@ def build_workers(popsize, dataset, hparams_fun=None, perturb_fun=None):
         print('# total setup time %3.1f' % build_time.elapsed())
     sess.close()
     return workers
-
-
-def resample_learnrate():
-    return 2.0**(-3 -15*np.random.random())
-
-
-def resample_batchsize():
-    return int(np.random.logseries(.95) * 10)
-
-
-def perturb_learnrate(learnrate):
-    return pbt.perturb(learnrate, 0.0, 0.1)
-
-
-def perturb_batchsize(batchsize):
-    return int(pbt.perturb(batchsize / 10.0, 1, 100) * 10)
 
 
 def train_workers(workers, train_time, training_steps, popshrink=1.0, step_callback=None, test_size=1000):
@@ -121,7 +109,7 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
 
     print('%d, %f, %d, ' %
           (total_iterations * batch_size, batch_time.split(), count), end='')
-    print('%f, ' % learn_rate, end='')
+    print('%g, ' % learn_rate, end='')
     print('%d, ' % batch_size, end='')
 
     testdata_size = len(dataset.test.labels)
