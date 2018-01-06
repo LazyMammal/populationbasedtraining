@@ -56,8 +56,8 @@ def group_by_worker(table, bestcol=(4, 5), avgcol=(4, 5), decay=0.5):
             avg = [row[col] for col in avgcol]
         wid = row[1]
         best = np.fmax(best, [row[col] for col in bestcol])
-        avg = np.array(avg) * decay
-        avg += np.array([row[col] for col in avgcol]) * (1.0 - decay)
+        avg = np.array(avg) * (1.0 - decay)
+        avg += np.array([row[col] for col in avgcol]) * decay
         workerblock.append(np.append(np.array(row), [best, avg]))
     workerorder.append(np.array(workerblock))
     return workerorder
