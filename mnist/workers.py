@@ -88,8 +88,11 @@ def train_worker(worker, train_time, test_size):
     return io_accum
 
 
-def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset):
-    train_step = tf.get_collection('train_step')[0]
+def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, train_graph=None):
+    if train_graph:
+        train_step = train_graph
+    else:
+        train_step = tf.get_collection('train_step')[0]
     x = tf.get_collection('x')[0]
     y_ = tf.get_collection('y_')[0]
     learning_rate = tf.get_collection('learning_rate')[0]

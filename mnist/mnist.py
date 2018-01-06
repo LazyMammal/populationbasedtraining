@@ -51,6 +51,7 @@ def gen_model(model, loss):
 
     tf.add_to_collection('x', x)
     tf.add_to_collection('y_', y_)
+    tf.add_to_collection('loss_fn', loss_fn)
     tf.add_to_collection('train_step', train_step)
     tf.add_to_collection('learning_rate', learning_rate)
     tf.add_to_collection('accuracy', accuracy)

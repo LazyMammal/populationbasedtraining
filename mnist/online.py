@@ -46,6 +46,11 @@ def build_workers(popsize, hparams_fun=None, perturb_fun=None):
 
 def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
     init_op = tf.get_collection('init_op')[0]
+    loss_fn = tf.get_collection('loss_fn')[0]
+    learning_rate = tf.get_collection('learning_rate')[0]
+    train_step = tf.train.GradientDescentOptimizer(
+        learning_rate=learning_rate).minimize(loss_fn)
+
     worker = 0
     with tf.Session() as sess:
         sess.run(init_op)
@@ -56,7 +61,7 @@ def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
                 print('%d, ' % worker['id'], end='')
                 score = workers_mod.train_graph(sess, train_time,
                                                 worker['hparams'][1], test_size,
-                                                worker['hparams'][0], dataset)
+                                                worker['hparams'][0], dataset, train_step)
                 worker['score'] = 1.0 - overfit_score(*score)
             pbt.pbt(workers, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
