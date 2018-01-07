@@ -61,7 +61,7 @@ def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
                 print('%d, ' % worker['id'], end='')
                 score = workers_mod.train_graph(sess, train_time,
                                                 worker['hparams'][1], test_size,
-                                                worker['hparams'][0], dataset, train_step)
+                                                worker['hparams'][0], dataset, train_step=train_step)
                 worker['score'] = 1.0 - overfit_score(*score)
             pbt.pbt(workers, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
