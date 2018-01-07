@@ -117,10 +117,12 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, tr
         sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
     testscore = test_accuracy(
         sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
+    validscore = test_accuracy(
+        sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
 
     print('%f, ' % trainscore, end='')
     print('%f, ' % testscore, end='')
-    print('%f' % batch_time.split())
+    print('%f' % validscore)
 
     return (trainscore, testscore)
 
