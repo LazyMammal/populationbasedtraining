@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import sys
 import argparse
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ def main(args):
     # steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
     # gridplot(steporder)
     workerorder = group_by_worker(table)
+    outpath = args.outdir + os.path.basename(args.file).split('.')[0]
 
     plotcompare(workerorder, yaxis={
                 'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
@@ -27,17 +29,19 @@ def main(args):
     plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
                                     'scale': 'log' if args.logplot else None}, plotnum=224)
     adjust_plots()
-    plt.show()
+    #plt.show()
+    plt.savefig(outpath + '.png')
 
-    overfit(workerorder)
-    PQ(workerorder)
+    overfit(workerorder, outpath)
+    PQ(workerorder, outpath)
 
     plotcompare(workerorder, {'col': 3, 'label': 'batch size',
                               'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
                               'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
     adjust_plots()
-    plt.show()
+    #plt.show()
+    plt.savefig(outpath + '_params.png')
 
 
 def group_by_worker(table, bestcol=(4, 5), avgcol=(4, 5), decay=0.5):
@@ -87,7 +91,7 @@ def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5,
                  worker[:, yaxis['col']], alpha=0.5, marker='o')
 
 
-def gridplot(steporder, gridshape=(7, 7)):
+def gridplot(steporder, gridshape=(7, 7), outpath='plot'):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(azim=-135, elev=45)
@@ -99,10 +103,11 @@ def gridplot(steporder, gridshape=(7, 7)):
         y = np.log(np.reshape(step[:, 2], gridshape))
         z = np.reshape(step[:, 5], gridshape)
         ax.plot_wireframe(x, y, z, alpha=0.85)
-    plt.show()
+    #plt.show()
+    plt.savefig(outpath + '_grid.png')
 
 
-def overfit(workerorder):
+def overfit(workerorder, outpath='plot'):
     plt.subplot(121)
     plt.title('% overfit')
     plt.xlabel("steps")
@@ -120,10 +125,11 @@ def overfit(workerorder):
         plt.plot(worker[:, 0], (1 - worker[:, 5]) /
                  (1 - worker[:, 4]), alpha=0.5, marker='o')
     adjust_plots()
-    plt.show()
+    #plt.show()
+    plt.savefig(outpath + '_overfit.png')
 
 
-def PQ(workerorder):
+def PQ(workerorder, outpath='plot'):
     plt.subplot(223)
     plt.title('GL - General Loss (filtered)')
     plt.xlabel("steps")
@@ -149,7 +155,8 @@ def PQ(workerorder):
                  (1 - worker[:, 7]) / ((1 - worker[:, 8]) /
                                        (1 - worker[:, 6])), alpha=0.5, marker='o')
     adjust_plots()
-    plt.show()
+    #plt.show()
+    plt.savefig(outpath + '_PQ.png')
 
 
 def adjust_plots(left=.11, bottom=.1, right=.97, top=.94, wspace=.33, hspace=.45):
@@ -160,7 +167,9 @@ def adjust_plots(left=.11, bottom=.1, right=.97, top=.94, wspace=.33, hspace=.45
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', nargs='?',
-                        default="csv\workers.csv", help="input file")
+                        default="csv/workers.csv", help="input file")
+    parser.add_argument('--outdir', nargs='?',
+                        default="charts/", help="output directory (./charts)")
     parser.add_argument('--skiprows', nargs='?', type=int,
                         default=0, help="Skip the first skiprows lines; default: 0")
     parser.add_argument('--logplot', nargs='?', type=bool,
