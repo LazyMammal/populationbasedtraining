@@ -130,7 +130,7 @@ def overfit(workerorder, outpath=None):
     plt.subplot(223)
     plt.title('overfit blended (bigger is better)')
     plt.xlabel("steps")
-    plt.ylabel("(1.0 - overfit) * test_accuracy")
+    plt.ylabel("(1.0 - overfit) * train_accuracy")
     plt.ylim(0.0, 1.0)
     for worker in workerorder:
         plt.plot(worker[:, 0], overfit_score.overfit_blended(
