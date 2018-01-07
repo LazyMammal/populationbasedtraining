@@ -6,6 +6,6 @@ def overfit_accuracy(train_accuracy, test_accuracy):
 
 def overfit_blended(train_accuracy, test_accuracy):
     """
-    strike a balance between 'overfit' and test accuracy
+    strike a balance between 'overfit' and train accuracy
     """
-    return (1.0 - overfit_accuracy(train_accuracy, test_accuracy)) * test_accuracy
+    return (1.0 - overfit_accuracy(train_accuracy, test_accuracy)) * train_accuracy
