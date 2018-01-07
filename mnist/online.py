@@ -36,7 +36,7 @@ def build_workers(popsize, hparams_fun=None, perturb_fun=None):
     workers = []
     for i in range(popsize):
         hparams = [fun() for fun in hparams_fun]
-        worker = {'id': i, 'score': 0.0,
+        worker = {'id': i, 'score': 0.0, 'score_value': 0.5,
                   'hparams': hparams, 'resample': hparams_fun, 'perturb': perturb_fun}
         workers.append(worker)
 
@@ -59,11 +59,14 @@ def train_workers(dataset, workers, train_time, training_steps, cutoff, test_siz
             for worker in workers:
                 print('%d, ' % step, end='')
                 print('%d, ' % worker['id'], end='')
-                trainscore, testscore = workers_mod.train_graph(sess, train_time,
+                score_value = worker['score_value']
+                time_available = train_time * (1.0 + score_value)
+                trainscore, testscore = workers_mod.train_graph(sess, time_available,
                                                                 worker['hparams'][1], test_size,
                                                                 worker['hparams'][0], dataset, train_step=train_step)
-                worker['score'] = overfit_score.overfit_blended(
+                worker['score_value'] = overfit_score.overfit_blended(
                     trainscore, testscore)
+                worker['score'] = (1.0 + worker['score_value']) / (1.0 + score_value)
             pbt.pbt(workers, cutoff, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
 
