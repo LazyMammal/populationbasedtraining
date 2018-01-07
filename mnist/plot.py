@@ -115,7 +115,7 @@ def overfit(workerorder, outpath='plot'):
     plt.ylim(0.0, 1.0)
     for worker in workerorder:
         plt.plot(worker[:, 0], overfit_score(
-            worker[:, 5], worker[:, 4]), alpha=0.5, marker='o')
+            worker[:, 4], worker[:, 5]), alpha=0.5, marker='o')
 
     plt.subplot(122)
     plt.title('test / train')

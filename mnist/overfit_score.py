@@ -1,4 +1,4 @@
-def overfit_score(test_accuracy, train_accuracy):
+def overfit_score(train_accuracy, test_accuracy):
     test_error = 1 - test_accuracy
     train_error = 1 - train_accuracy
-    return (test_error - train_error) / test_error
+    return 1.0 - (train_error / test_error)
