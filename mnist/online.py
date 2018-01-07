@@ -60,7 +60,7 @@ def train_workers(dataset, workers, train_time, training_steps, cutoff, test_siz
                 print('%d, ' % step, end='')
                 print('%d, ' % worker['id'], end='')
                 score_value = worker['score_value']
-                time_available = train_time * (1.0 + score_value)
+                time_available = train_time * (0.1 + worker['score'])
                 trainscore, testscore = workers_mod.train_graph(sess, time_available,
                                                                 worker['hparams'][1], test_size,
                                                                 worker['hparams'][0], dataset, train_step=train_step)
