@@ -9,7 +9,7 @@ from timer import Timer
 import mnist
 import pbt
 from test_accuracy import test_accuracy
-from overfit_score import overfit_score
+import overfit_score
 import hparams as hp
 import workers as workers_mod
 
@@ -59,10 +59,11 @@ def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
             for worker in workers:
                 print('%d, ' % step, end='')
                 print('%d, ' % worker['id'], end='')
-                score = workers_mod.train_graph(sess, train_time,
-                                                worker['hparams'][1], test_size,
-                                                worker['hparams'][0], dataset, train_step=train_step)
-                worker['score'] = 1.0 - overfit_score(*score)
+                trainscore, testscore = workers_mod.train_graph(sess, train_time,
+                                                                worker['hparams'][1], test_size,
+                                                                worker['hparams'][0], dataset, train_step=train_step)
+                worker['score'] = overfit_score.overfit_blended(
+                    trainscore, testscore)
             pbt.pbt(workers, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
 

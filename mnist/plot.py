@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
-from overfit_score import overfit_score
+import overfit_score
 import pq_score
 
 
@@ -118,10 +118,19 @@ def overfit(workerorder, outpath='plot'):
     plt.ylabel("(test - train) / test")
     plt.ylim(0.0, 1.0)
     for worker in workerorder:
-        plt.plot(worker[:, 0], overfit_score(
+        plt.plot(worker[:, 0], overfit_score.overfit_accuracy(
             worker[:, 4], worker[:, 5]), alpha=0.5, marker='o')
 
-    plt.subplot(122)
+    plt.subplot(223)
+    plt.title('overfit blended (bigger is better)')
+    plt.xlabel("steps")
+    plt.ylabel("(1.0 - overfit) * test_accuracy")
+    plt.ylim(0.0, 1.0)
+    for worker in workerorder:
+        plt.plot(worker[:, 0], overfit_score.overfit_blended(
+            worker[:, 4], worker[:, 5]), alpha=0.5, marker='o')
+
+    plt.subplot(222)
     plt.title('test / train')
     plt.xlabel("steps")
     plt.ylabel("test / train")

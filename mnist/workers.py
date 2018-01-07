@@ -9,7 +9,7 @@ from timer import Timer
 import mnist
 import pbt
 from test_accuracy import test_accuracy
-from overfit_score import overfit_score
+import overfit_score
 import hparams as hp
 
 
@@ -79,9 +79,10 @@ def train_worker(worker, train_time, test_size):
         worker['dup_from_name'] = None
         io_accum += io_time.split()
         print('%d, ' % worker['id'], end='')
-        score = train_graph(sess, train_time, worker['hparams'][1],
-                            test_size, worker['hparams'][0], worker['dataset'])
-        worker['score'] = 1.0 - overfit_score(*score)
+        trainscore, testscore = train_graph(sess, train_time,
+                                            worker['hparams'][1], test_size,
+                                            worker['hparams'][0], worker['dataset'])
+        worker['score'] = overfit_score.overfit_blended(trainscore, testscore)
         io_time.split()
         saver2.save(sess, worker['name'])
         io_accum += io_time.split()
