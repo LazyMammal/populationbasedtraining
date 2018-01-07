@@ -137,6 +137,10 @@ def overfit(workerorder, outpath='plot'):
     for worker in workerorder:
         plt.plot(worker[:, 0], (1 - worker[:, 5]) /
                  (1 - worker[:, 4]), alpha=0.5, marker='o')
+
+    plotcompare(workerorder, yaxis={
+                'col': 6, 'label': 'validation accuracy', 'limit': (0.0, 1.0)}, plotnum=224)
+
     adjust_plots()
     # plt.show()
     plt.savefig(outpath + '_overfit.png')
