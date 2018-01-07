@@ -26,7 +26,7 @@ def main(args):
                             [hp.perturb_learnrate, hp.perturb_batchsize])
 
     train_workers(dataset, workers, args.train_time,
-                  args.steps, test_size=1000)
+                  args.steps, args.cutoff, test_size=1000)
 
     print('# total time %3.1f' % main_time.elapsed())
 
@@ -44,7 +44,7 @@ def build_workers(popsize, hparams_fun=None, perturb_fun=None):
     return workers
 
 
-def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
+def train_workers(dataset, workers, train_time, training_steps, cutoff, test_size=1000):
     init_op = tf.get_collection('init_op')[0]
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
@@ -64,7 +64,7 @@ def train_workers(dataset, workers, train_time, training_steps, test_size=1000):
                                                                 worker['hparams'][0], dataset, train_step=train_step)
                 worker['score'] = overfit_score.overfit_blended(
                     trainscore, testscore)
-            pbt.pbt(workers, dup_all=False)
+            pbt.pbt(workers, cutoff, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
 
 
@@ -76,6 +76,8 @@ if __name__ == '__main__':
                         default="softmax", help="tensorflow loss")
     parser.add_argument('--popsize', nargs='?', type=int,
                         default=10, help="number of workers (10)")
+    parser.add_argument('--cutoff', nargs='?', type=float,
+                        default=0.2, help="fraction of population to replace after each step (0.2)")
     parser.add_argument('--train_time', nargs='?', type=float,
                         default=1.0, help="training time per worker per step (1.0s)")
     parser.add_argument('--steps', nargs='?', type=int,
