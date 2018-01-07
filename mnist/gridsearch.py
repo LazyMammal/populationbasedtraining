@@ -8,6 +8,7 @@ import tensorflow as tf
 from timer import Timer
 import mnist
 from test_accuracy import test_accuracy
+import hparams as hp
 
 
 def main(args):
@@ -17,9 +18,26 @@ def main(args):
 
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
 
-    search_grid(dataset, args.popsize, args.train_time, args.steps)
+    #search_grid(dataset, args.popsize, args.train_time, args.steps)
+    multi_random(dataset, args.popsize, args.train_time, args.steps)
 
     print('# total time %3.1f' % main_time.elapsed())
+
+
+def multi_random(dataset, popsize, train_time, training_steps, test_size=1000):
+    init_op = tf.get_collection('init_op')[0]
+    worker_time = Timer()
+    with tf.Session() as sess:
+        for worker in range(popsize):
+            learn_rate = hp.resample_learnrate()
+            batch_size = hp.resample_batchsize()
+            sess.run(init_op)
+            for step in range(1, training_steps + 1):
+                print('%d, ' % step, end='')
+                print('%d, ' % worker, end='')
+                train_graph(sess, dataset, train_time, test_size,
+                            batch_size, learn_rate)
+            print('# worker time %3.1fs, ' % step_time.split(), end='')
 
 
 def search_grid(dataset, popsize, train_time, training_steps, test_size=1000):
