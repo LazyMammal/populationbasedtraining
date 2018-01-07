@@ -29,7 +29,7 @@ def main(args):
     plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
                                     'scale': 'log' if args.logplot else None}, plotnum=224)
     adjust_plots()
-    #plt.show()
+    # plt.show()
     plt.savefig(outpath + '.png')
 
     overfit(workerorder, outpath)
@@ -40,7 +40,7 @@ def main(args):
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
                               'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
     adjust_plots()
-    #plt.show()
+    # plt.show()
     plt.savefig(outpath + '_params.png')
 
 
@@ -103,7 +103,7 @@ def gridplot(steporder, gridshape=(7, 7), outpath='plot'):
         y = np.log(np.reshape(step[:, 2], gridshape))
         z = np.reshape(step[:, 5], gridshape)
         ax.plot_wireframe(x, y, z, alpha=0.85)
-    #plt.show()
+    # plt.show()
     plt.savefig(outpath + '_grid.png')
 
 
@@ -125,7 +125,7 @@ def overfit(workerorder, outpath='plot'):
         plt.plot(worker[:, 0], (1 - worker[:, 5]) /
                  (1 - worker[:, 4]), alpha=0.5, marker='o')
     adjust_plots()
-    #plt.show()
+    # plt.show()
     plt.savefig(outpath + '_overfit.png')
 
 
@@ -155,7 +155,7 @@ def PQ(workerorder, outpath='plot'):
                  (1 - worker[:, 7]) / ((1 - worker[:, 8]) /
                                        (1 - worker[:, 6])), alpha=0.5, marker='o')
     adjust_plots()
-    #plt.show()
+    # plt.show()
     plt.savefig(outpath + '_PQ.png')
 
 
