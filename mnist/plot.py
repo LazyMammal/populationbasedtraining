@@ -14,7 +14,7 @@ import pq_score
 
 def main(args):
     table = np.loadtxt(args.file, delimiter=',', usecols=(
-        0, 1, 5, 6, 7, 8), skiprows=args.skiprows)
+        0, 1, 5, 6, 7, 8, 9), skiprows=args.skiprows)
     # maxsteps  = int(max(np.array(table)[:, 0]))
     # steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
     # gridplot(steporder)
@@ -158,7 +158,7 @@ def PQ(workerorder, outpath=None):
     plt.ylabel("avg(test) / best(test)")
     for worker in workerorder:
         plt.plot(worker[:, 0], pq_score.gl_accuracy(
-            worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
+            worker[:, 10], worker[:, 8]), alpha=0.5, marker='o')
 
     plt.subplot(224)
     plt.title('P - Progress (filtered)')
@@ -166,15 +166,15 @@ def PQ(workerorder, outpath=None):
     plt.ylabel("avg(train) / best(train)")
     for worker in workerorder:
         plt.plot(worker[:, 0], pq_score.p_accuracy(
-            worker[:, 8], worker[:, 6]), alpha=0.5, marker='o')
+            worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
 
     plt.subplot(221)
     plt.title('PQ - Generality to Progress Ratio')
     plt.xlabel("steps")
     plt.ylabel("GL / P")
     for worker in workerorder:
-        plt.plot(worker[:, 0], pq_score.pq_accuracy(worker[:, 8], worker[:, 6],
-                                                    worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.pq_accuracy(worker[:, 9], worker[:, 7],
+                                                    worker[:, 10], worker[:, 8]), alpha=0.5, marker='o')
     output_plot(outpath, '_PQ')
 
 
