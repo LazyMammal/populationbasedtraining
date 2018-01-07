@@ -89,7 +89,7 @@ def train_worker(worker, train_time, test_size):
 
 
 def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, train_step=None):
-    if train_graph is None:
+    if train_step is None:
         train_step = tf.get_collection('train_step')[0]
     x = tf.get_collection('x')[0]
     y_ = tf.get_collection('y_')[0]
