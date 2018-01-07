@@ -67,7 +67,8 @@ def train_workers(dataset, workers, train_time, training_steps, cutoff, test_siz
                 worker['score_value'] = overfit_score.overfit_blended(
                     trainscore, testscore)
                 worker['score'] = (1.0 + worker['score_value']) / (1.0 + score_value)
-            pbt.pbt(workers, cutoff, dup_all=False)
+                pbt.tournament_replace(worker, workers, cutoff, dup_all=False, explore_fun=pbt.perturb_hparams)
+            #pbt.pbt(workers, cutoff, dup_all=False)
             print('# step time %3.1fs, ' % step_time.split())
 
 
