@@ -13,8 +13,8 @@ def resample_batchsize():
 
 
 def perturb_learnrate(learnrate):
-    return pbt.perturb(learnrate, 0.0, 0.1, scale=[0.4, 2.1])
+    return pbt.perturb(learnrate, 0.0, 0.1, scale=[0.65, 1.55])
 
 
 def perturb_batchsize(batchsize):
-    return int(pbt.perturb(batchsize, 0.5, 1000, scale=[0.4, 2.1])+0.5)
+    return int(pbt.perturb(batchsize, 0.5, 1000, scale=[0.65, 1.55])+0.5)
