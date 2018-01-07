@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
 from overfit_score import overfit_score
+import pq_score
 
 
 def main(args):
@@ -135,25 +136,24 @@ def PQ(workerorder, outpath='plot'):
     plt.xlabel("steps")
     plt.ylabel("avg(test) / best(test)")
     for worker in workerorder:
-        plt.plot(worker[:, 0], (1 - worker[:, 9]) /
-                 (1 - worker[:, 7]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.gl_accuracy(
+            worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
 
     plt.subplot(224)
     plt.title('P - Progress (filtered)')
     plt.xlabel("steps")
     plt.ylabel("avg(train) / best(train)")
     for worker in workerorder:
-        plt.plot(worker[:, 0], (1 - worker[:, 8]) /
-                 (1 - worker[:, 6]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.p_accuracy(
+            worker[:, 8], worker[:, 6]), alpha=0.5, marker='o')
 
     plt.subplot(221)
     plt.title('PQ - Generality to Progress Ratio')
     plt.xlabel("steps")
     plt.ylabel("GL / P")
     for worker in workerorder:
-        plt.plot(worker[:, 0], (1 - worker[:, 9]) /
-                 (1 - worker[:, 7]) / ((1 - worker[:, 8]) /
-                                       (1 - worker[:, 6])), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.pq_accuracy(worker[:, 8], worker[:, 6],
+                                                    worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
     adjust_plots()
     # plt.show()
     plt.savefig(outpath + '_PQ.png')
