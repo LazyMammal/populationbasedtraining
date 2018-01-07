@@ -15,9 +15,8 @@ def dup_hparams(dest, source):
     dest['hparams'] = copy.copy(source['hparams'])
 
 
-def dup_weights(dest, source, new_id):
+def dup_weights(dest, source):
     dest['dup_from_name'] = source['name']
-    dest['id'] = new_id
 
 
 def resample_hparams(worker):
@@ -38,8 +37,9 @@ def truncate_pop(workers, cutoff=0.2, popshrink=1.0, dup_all=True, explore_fun=N
     for best, worst in zip(workers[:index], workers[-index:]):
         max_id += 1
         dup_hparams(worst, best)
+        worst['id'] = max_id
         if dup_all:
-            dup_weights(worst, best, max_id)
+            dup_weights(worst, best)
         if explore_fun:
             explore_fun(worst)
 
