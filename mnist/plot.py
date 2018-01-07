@@ -21,6 +21,7 @@ def main(args):
     workerorder = group_by_worker(table)
     outpath = args.outdir + os.path.basename(args.file).split('.')[0]
 
+    fig = plt.figure()
     plotcompare(workerorder, yaxis={
                 'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
     plotcompare(workerorder, yaxis={
@@ -36,6 +37,7 @@ def main(args):
     overfit(workerorder, outpath)
     PQ(workerorder, outpath)
 
+    fig = plt.figure()
     plotcompare(workerorder, {'col': 3, 'label': 'batch size',
                               'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
@@ -109,7 +111,8 @@ def gridplot(steporder, gridshape=(7, 7), outpath='plot'):
 
 
 def overfit(workerorder, outpath='plot'):
-    plt.subplot(121)
+    fig = plt.figure()
+    plt.subplot(221)
     plt.title('% overfit')
     plt.xlabel("steps")
     plt.ylabel("(test - train) / test")
@@ -131,6 +134,7 @@ def overfit(workerorder, outpath='plot'):
 
 
 def PQ(workerorder, outpath='plot'):
+    fig = plt.figure()
     plt.subplot(223)
     plt.title('GL - General Loss (filtered)')
     plt.xlabel("steps")
