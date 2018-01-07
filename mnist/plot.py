@@ -19,7 +19,10 @@ def main(args):
     # steporder = np.reshape(table[np.lexsort((table[:,1],table[:,0]))], (maxsteps, -1, 6))
     # gridplot(steporder)
     workerorder = group_by_worker(table)
-    outpath = args.outdir + os.path.basename(args.file).split('.')[0]
+    if args.outdir is '':
+        outpath = None
+    else:
+        outpath = args.outdir + '/' + os.path.basename(args.file).split('.')[0]
 
     fig = plt.figure()
     plotcompare(workerorder, yaxis={
@@ -30,9 +33,7 @@ def main(args):
                 'col': 3, 'label': 'batch size'}, plotnum=223)
     plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
                                     'scale': 'log' if args.logplot else None}, plotnum=224)
-    adjust_plots()
-    # plt.show()
-    plt.savefig(outpath + '.png')
+    output_plot(outpath)
 
     overfit(workerorder, outpath)
     PQ(workerorder, outpath)
@@ -42,9 +43,15 @@ def main(args):
                               'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
                               'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
+    output_plot(outpath, '_params')
+
+
+def output_plot(outpath, suffix=''):
     adjust_plots()
-    # plt.show()
-    plt.savefig(outpath + '_params.png')
+    if outpath is None:
+        plt.show()
+    else:
+        plt.savefig(outpath + suffix + '.png')
 
 
 def group_by_worker(table, bestcol=(4, 5), avgcol=(4, 5), decay=0.5):
@@ -94,7 +101,7 @@ def plotcompare(workerorder, xaxis={'col': 0, 'label': 'step'}, yaxis={'col': 5,
                  worker[:, yaxis['col']], alpha=0.5, marker='o')
 
 
-def gridplot(steporder, gridshape=(7, 7), outpath='plot'):
+def gridplot(steporder, gridshape=(7, 7), outpath=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(azim=-135, elev=45)
@@ -106,11 +113,10 @@ def gridplot(steporder, gridshape=(7, 7), outpath='plot'):
         y = np.log(np.reshape(step[:, 2], gridshape))
         z = np.reshape(step[:, 5], gridshape)
         ax.plot_wireframe(x, y, z, alpha=0.85)
-    # plt.show()
-    plt.savefig(outpath + '_grid.png')
+    output_plot(outpath, '_grid')
 
 
-def overfit(workerorder, outpath='plot'):
+def overfit(workerorder, outpath=None):
     fig = plt.figure()
     plt.subplot(221)
     plt.title('% overfit')
@@ -141,12 +147,10 @@ def overfit(workerorder, outpath='plot'):
     plotcompare(workerorder, yaxis={
                 'col': 6, 'label': 'validation accuracy', 'limit': (0.0, 1.0)}, plotnum=224)
 
-    adjust_plots()
-    # plt.show()
-    plt.savefig(outpath + '_overfit.png')
+    output_plot(outpath, '_overfit')
 
 
-def PQ(workerorder, outpath='plot'):
+def PQ(workerorder, outpath=None):
     fig = plt.figure()
     plt.subplot(223)
     plt.title('GL - General Loss (filtered)')
@@ -171,9 +175,7 @@ def PQ(workerorder, outpath='plot'):
     for worker in workerorder:
         plt.plot(worker[:, 0], pq_score.pq_accuracy(worker[:, 8], worker[:, 6],
                                                     worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
-    adjust_plots()
-    # plt.show()
-    plt.savefig(outpath + '_PQ.png')
+    output_plot(outpath, '_PQ')
 
 
 def adjust_plots(left=.11, bottom=.1, right=.97, top=.94, wspace=.33, hspace=.45):
@@ -186,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('--file', nargs='?',
                         default="csv/workers.csv", help="input file")
     parser.add_argument('--outdir', nargs='?',
-                        default="charts/", help="output directory (./charts)")
+                        default="", help="output directory (or interactive if not given)")
     parser.add_argument('--skiprows', nargs='?', type=int,
                         default=0, help="Skip the first skiprows lines; default: 0")
     parser.add_argument('--logplot', nargs='?', type=bool,
