@@ -9,7 +9,7 @@ def resample_learnrate():
 
 
 def resample_batchsize():
-    return int(np.random.logseries(.95) * 10)
+    return int(np.clip(np.random.logseries(.995), 1, 1000))
 
 
 def perturb_learnrate(learnrate):
@@ -17,4 +17,4 @@ def perturb_learnrate(learnrate):
 
 
 def perturb_batchsize(batchsize):
-    return int(pbt.perturb(batchsize / 10.0, 1, 100) * 10)
+    return int(pbt.perturb(batchsize, 1, 1000))
