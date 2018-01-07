@@ -44,6 +44,20 @@ def truncate_pop(workers, cutoff=0.2, popshrink=1.0, dup_all=True, explore_fun=N
             explore_fun(worst)
 
 
+def tournament_replace(dest, workers, cutoff=0.2, dup_all=True, explore_fun=None):
+    max_id = max([w['id'] for w in workers])
+    workers.sort(key=lambda worker: worker['score'], reverse=True)
+    index = int(cutoff * len(workers))
+    if workers[-index]['score'] > dest['score']:
+        other = np.random.choice(workers[:-index])
+        dup_hparams(dest, other)
+        dest['id'] = max_id + 1
+        if dup_all:
+            dup_weights(dest, other)
+        if explore_fun:
+            explore_fun(dest)
+
+
 def perturb(hparam, min_=0.0, max_=1.0, scale=[0.9, 1.1]):
     return np.clip(hparam * randbeta(*scale), min_, max_)
 
