@@ -152,7 +152,7 @@ def PQ(workerorder):
     plt.show()
 
 
-def adjust_plots(left=.1, bottom=.1, right=.97, top=.95, wspace=.33, hspace=.45):
+def adjust_plots(left=.11, bottom=.1, right=.97, top=.94, wspace=.33, hspace=.45):
     plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top,
                         wspace=wspace, hspace=hspace)
 
