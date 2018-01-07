@@ -19,7 +19,7 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
+    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
 
     workers = build_workers(args.popsize,
                             [hp.resample_learnrate, hp.resample_batchsize],

@@ -17,7 +17,7 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, time')
+    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
 
     #search_grid(dataset, args.popsize, args.train_time, args.steps)
     multi_random(dataset, args.popsize, args.train_time, args.steps)
