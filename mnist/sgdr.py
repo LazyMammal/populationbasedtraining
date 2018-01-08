@@ -17,7 +17,7 @@ def main(args):
     dataset = mnist.get_dataset(args.dataset)
     mnist.gen_model(args.model, args.loss)
 
-    print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
+    print('step, worker, samples, time, learnrate, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
     sgdr(dataset, args.popsize, args.steps)
     print('# total time %3.1f' % main_time.elapsed())
 
@@ -31,9 +31,9 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
 
     worker_time = Timer()
     with tf.Session() as sess:
-        sess.run(init_op)
         for wid in range(popsize):
-            learn_rate = 1.0 / (2**wid)
+            sess.run(init_op)
+            learn_rate = 0.8 / (2**wid)
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
@@ -53,17 +53,22 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
         batch_size = 100
         iterations = numsamples // batch_size
         batch_time = Timer()
+        lr = learn_rate
         for b in range(iterations):
-            dx = (epoch * batch_size + b) / float(epochs * batch_size)
-            learn_rate = learn_rate * 0.5 * (1.0 + np.cos(dx * np.pi))
-            train_batch(sess, batch_size, learn_rate,
-                        dataset, train_step)
+            lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
+            train_batch(sess, batch_size, lr, dataset, train_step)
         print('%d, %f, %d, ' %
               (numsamples, batch_time.split(), iterations), end='')
-        print('%g, ' % learn_rate, end='')
+        print('%g, ' % lr, end='')
         print('%d, ' % batch_size, end='')
         test_graph(sess, batch_size, test_size, dataset)
     return step
+
+
+def scale_learn_rate(learn_rate, epoch, epochs, b, iterations):
+    dx = (epoch * iterations + b) / float(epochs * iterations)
+    lr = learn_rate * 0.5 * (1.0 + np.cos(dx * np.pi))
+    return lr
 
 
 def train_batch(sess, batch_size, learn_rate, dataset, train_step=None):
