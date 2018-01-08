@@ -32,33 +32,38 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
     worker_time = Timer()
     with tf.Session() as sess:
         sess.run(init_op)
-        numsamples = len(dataset.train.labels)
-        for worker in range(popsize):
-            lr = 1.0 / (2**(worker))
+        for wid in range(popsize):
+            learn_rate = 1.0 / (2**wid)
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
-                for epoch in range(epochs):
-                    step += 1
-                    print('%d, ' % step, end='')
-                    print('%d, ' % worker, end='')
-                    batch_size = 100
-                    iterations = numsamples // batch_size
-                    batch_time = Timer()
-                    for batchnum in range(iterations):
-                        dx = float(epoch * batch_size + batchnum) / \
-                            float(epochs * batch_size)
-                        learn_rate = lr * 0.5 * (1.0 + np.cos(dx * np.pi))
-                        train_batch(sess, batch_size, learn_rate,
-                                    dataset, train_step)
-                    print('%d, %f, %d, ' %
-                          (numsamples, batch_time.split(), iterations), end='')
-                    print('%g, ' % learn_rate, end='')
-                    print('%d, ' % batch_size, end='')
-                    test_graph(sess, batch_size, test_size, dataset)
+                step = train_restart(
+                    sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
                 epochs *= 2
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
         print('# worker time %3.1fs' % worker_time.split())
+
+
+def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step):
+    numsamples = len(dataset.train.labels)
+    for epoch in range(epochs):
+        step += 1
+        print('%d, ' % step, end='')
+        print('%d, ' % wid, end='')
+        batch_size = 100
+        iterations = numsamples // batch_size
+        batch_time = Timer()
+        for b in range(iterations):
+            dx = (epoch * batch_size + b) / float(epochs * batch_size)
+            learn_rate = learn_rate * 0.5 * (1.0 + np.cos(dx * np.pi))
+            train_batch(sess, batch_size, learn_rate,
+                        dataset, train_step)
+        print('%d, %f, %d, ' %
+              (numsamples, batch_time.split(), iterations), end='')
+        print('%g, ' % learn_rate, end='')
+        print('%d, ' % batch_size, end='')
+        test_graph(sess, batch_size, test_size, dataset)
+    return step
 
 
 def train_batch(sess, batch_size, learn_rate, dataset, train_step=None):
