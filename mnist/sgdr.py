@@ -18,13 +18,11 @@ def main(args):
     mnist.gen_model(args.model, args.loss)
 
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
-
-    sgrd(dataset, args.popsize, args.train_time, args.steps)
-
+    sgdr(dataset, args.popsize, args.steps)
     print('# total time %3.1f' % main_time.elapsed())
 
 
-def sgrd(dataset, popsize, train_time, training_steps, test_size=1000):
+def sgdr(dataset, popsize, training_steps, test_size=1000):
     init_op = tf.get_collection('init_op')[0]
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
@@ -33,24 +31,65 @@ def sgrd(dataset, popsize, train_time, training_steps, test_size=1000):
 
     worker_time = Timer()
     with tf.Session() as sess:
+        sess.run(init_op)
+        numsamples = len(dataset.train.labels)
         for worker in range(popsize):
-            lr = 0.1 / (2**(worker))
+            lr = 1.0 / (2**(worker))
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
                 for epoch in range(epochs):
                     step += 1
-                    dx = np.pi * float(epoch) / float(epochs+1)
-                    learn_rate = lr * 0.5 * (1.0 + np.cos(dx))
-                    batch_size = 100
-                    sess.run(init_op)
                     print('%d, ' % step, end='')
                     print('%d, ' % worker, end='')
-                    trainscore, testscore = workers_mod.train_graph(
-                        sess, train_time, batch_size, test_size, learn_rate, dataset, train_step=train_step)
+                    batch_size = 100
+                    iterations = numsamples // batch_size
+                    batch_time = Timer()
+                    for batchnum in range(iterations):
+                        dx = float(epoch * batch_size + batchnum) / \
+                            float(epochs * batch_size)
+                        learn_rate = lr * 0.5 * (1.0 + np.cos(dx * np.pi))
+                        train_batch(sess, batch_size, learn_rate,
+                                    dataset, train_step)
+                    print('%d, %f, %d, ' %
+                          (numsamples, batch_time.split(), iterations), end='')
+                    print('%g, ' % learn_rate, end='')
+                    print('%d, ' % batch_size, end='')
+                    test_graph(sess, batch_size, test_size, dataset)
                 epochs *= 2
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
         print('# worker time %3.1fs' % worker_time.split())
+
+
+def train_batch(sess, batch_size, learn_rate, dataset, train_step=None):
+    if train_step is None:
+        train_step = tf.get_collection('train_step')[0]
+    x = tf.get_collection('x')[0]
+    y_ = tf.get_collection('y_')[0]
+    learning_rate = tf.get_collection('learning_rate')[0]
+
+    mnist.iterate_training(sess, 1, batch_size, learn_rate,
+                           dataset, x, y_, train_step, learning_rate)
+
+
+def test_graph(sess, batch_size, test_size, dataset):
+    x = tf.get_collection('x')[0]
+    y_ = tf.get_collection('y_')[0]
+    accuracy = tf.get_collection('accuracy')[0]
+
+    testdata_size = len(dataset.test.labels)
+    trainscore = test_accuracy(
+        sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
+    testscore = test_accuracy(
+        sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
+    validscore = test_accuracy(
+        sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
+
+    print('%f, ' % trainscore, end='')
+    print('%f, ' % testscore, end='')
+    print('%f' % validscore)
+
+    return (trainscore, testscore)
 
 
 if __name__ == '__main__':
@@ -61,8 +100,6 @@ if __name__ == '__main__':
                         default="softmax", help="tensorflow loss")
     parser.add_argument('--popsize', nargs='?', type=int,
                         default=1, help="number of workers (1)")
-    parser.add_argument('--train_time', nargs='?', type=float,
-                        default=1.0, help="training time per worker per step (1.0s)")
     parser.add_argument('--steps', nargs='?', type=int,
                         default=10, help="number of training steps (10)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
