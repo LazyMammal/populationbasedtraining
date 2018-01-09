@@ -39,7 +39,7 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
     with tf.Session() as sess:
         for wid in range(popsize):
             sess.run(init_op)
-            learn_rate = 0.8 / (2**wid)
+            learn_rate = 0.1 / (2**wid)
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
