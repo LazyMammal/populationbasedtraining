@@ -28,9 +28,14 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
     # opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
     # opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
     opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
-    train_step = opt.minimize(loss_fn)
 
+    beta = 0.01
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if var is not None])
+    regularizer = tf.nn.l2_loss(weights)
+    loss = tf.reduce_mean(loss_fn + beta * regularizer)
+    train_step = opt.minimize(loss)
+
     opt_vars = [opt.get_slot(var, name) for name in opt.get_slot_names() for var in var_list if var is not None]
     reset_opt = tf.variables_initializer(opt_vars)
     init_op = tf.global_variables_initializer()
@@ -57,13 +62,13 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
         print('%d, ' % step, end='')
         print('%d, ' % wid, end='')
         batch_size = 100
-        iterations = numsamples // batch_size
+        iterations = numsamples // batch_size // 4
         batch_time = Timer()
         lr_start = scale_learn_rate(learn_rate, epoch, epochs, 0, iterations)
         for b in range(iterations):
             lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
             train_batch(sess, batch_size, lr, dataset, train_step)
-        print('%d, %f, %d, ' % (numsamples, batch_time.split(), iterations), end='')
+        print('%d, %f, %d, ' % (iterations * batch_size, batch_time.split(), iterations), end='')
         print('%g, ' % lr_start, end='')
         print('%d, ' % batch_size, end='')
         test_graph(sess, batch_size, test_size, dataset)
