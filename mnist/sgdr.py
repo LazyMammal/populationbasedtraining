@@ -57,7 +57,7 @@ def sgdr(dataset, popsize, training_steps, learnlist=[0.1], optimizer='sgd', sta
                 step = train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
                 epochs *= 2
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
-        print('# worker time %3.1fs' % worker_time.split())
+            print('# worker time %3.1fs' % worker_time.split())
 
 
 def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step):
