@@ -25,9 +25,14 @@ def main(args):
 def sgdr(dataset, popsize, training_steps, test_size=1000):
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
-    # train_step = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss_fn)
-    # train_step = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(loss_fn)
-    train_step = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9).minimize(loss_fn)
+    # opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+    # opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
+    opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+    train_step = opt.minimize(loss_fn)
+
+    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    opt_vars = [opt.get_slot(var, name) for name in opt.get_slot_names() for var in var_list if var is not None]
+    reset_opt = tf.variables_initializer(opt_vars)
     init_op = tf.global_variables_initializer()
 
     worker_time = Timer()
@@ -38,6 +43,7 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
+                sess.run(reset_opt)
                 step = train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
                 epochs *= 2
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
