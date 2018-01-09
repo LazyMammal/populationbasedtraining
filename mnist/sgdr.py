@@ -18,16 +18,20 @@ def main(args):
     mnist.gen_model(args.model, args.loss)
 
     print('step, worker, samples, time, learnrate, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
-    sgdr(dataset, args.popsize, args.steps)
+    sgdr(dataset, args.popsize, args.steps, args.learnrate, args.opt, args.workerid)
     print('# total time %3.1f' % main_time.elapsed())
 
 
-def sgdr(dataset, popsize, training_steps, test_size=1000):
+def sgdr(dataset, popsize, training_steps, learnlist=[0.1], optimizer='sgd', start_wid=0, test_size=1000):
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
-    # opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-    # opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
-    opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+
+    if optimizer == 'rmsprop':
+        opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
+    elif optimizer == 'momentum':
+        opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+    else:  # 'sgd'
+        opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 
     beta = 0.01
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -42,9 +46,10 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
 
     worker_time = Timer()
     with tf.Session() as sess:
-        for wid in range(popsize):
+        for wid, learn_rate in zip(
+                range(start_wid, start_wid + popsize),
+                np.repeat(learnlist, int(0.5 + float(popsize) / len(learnlist)))):
             sess.run(init_op)
-            learn_rate = 0.1 / (2**wid)
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
@@ -123,7 +128,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
     parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument(
+        '--opt', type=str, choices=['sgd', 'momentum', 'rmsprop'],
+        default='momentum', help='optimizer (momentum)')
     parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
+    parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
     parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
+    parser.add_argument('--learnrate', nargs='*', type=float, default=0.1, help="learning rate (0.1)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
