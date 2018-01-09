@@ -134,6 +134,6 @@ if __name__ == '__main__':
     parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
     parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
     parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
-    parser.add_argument('--learnrate', nargs='*', type=float, default=0.1, help="learning rate (0.1)")
+    parser.add_argument('--learnrate', nargs='*', type=float, default=[0.1], help="learning rate (0.1)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
