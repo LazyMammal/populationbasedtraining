@@ -96,6 +96,12 @@ def plotcompare(
         plt.gca().invert_xaxis()
     if 'reverse' in yaxis:
         plt.gca().invert_yaxis()
+    '''
+    for x, worker in enumerate(workerorder):
+        a, = plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
+        a.set_label(str(float(x+5)/10))
+    plt.legend()
+    '''
     for worker in workerorder:
         plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
 
