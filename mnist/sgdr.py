@@ -25,7 +25,8 @@ def main(args):
 def sgdr(dataset, popsize, training_steps, test_size=1000):
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
-    #train_step = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss_fn)
+    # train_step = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss_fn)
+    # train_step = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(loss_fn)
     train_step = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9).minimize(loss_fn)
     init_op = tf.global_variables_initializer()
 
@@ -37,8 +38,7 @@ def sgdr(dataset, popsize, training_steps, test_size=1000):
             epochs = 1
             step = 0
             for _ in range(1, training_steps + 1):
-                step = train_restart(
-                    sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
+                step = train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
                 epochs *= 2
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
         print('# worker time %3.1fs' % worker_time.split())
@@ -57,8 +57,7 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
         for b in range(iterations):
             lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
             train_batch(sess, batch_size, lr, dataset, train_step)
-        print('%d, %f, %d, ' %
-              (numsamples, batch_time.split(), iterations), end='')
+        print('%d, %f, %d, ' % (numsamples, batch_time.split(), iterations), end='')
         print('%g, ' % lr_start, end='')
         print('%d, ' % batch_size, end='')
         test_graph(sess, batch_size, test_size, dataset)
@@ -73,7 +72,7 @@ def test_learn_rate():
         print(epoch)
         for b in range(iterations):
             lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
-            print(lr, learn_rate, epoch, epochs, b, iterations)    
+            print(lr, learn_rate, epoch, epochs, b, iterations)
 
 
 def scale_learn_rate(learn_rate, epoch, epochs, b, iterations):
@@ -89,8 +88,7 @@ def train_batch(sess, batch_size, learn_rate, dataset, train_step=None):
     y_ = tf.get_collection('y_')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
 
-    mnist.iterate_training(sess, 1, batch_size, learn_rate,
-                           dataset, x, y_, train_step, learning_rate)
+    mnist.iterate_training(sess, 1, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate)
 
 
 def test_graph(sess, batch_size, test_size, dataset):
@@ -99,12 +97,9 @@ def test_graph(sess, batch_size, test_size, dataset):
     accuracy = tf.get_collection('accuracy')[0]
 
     testdata_size = len(dataset.test.labels)
-    trainscore = test_accuracy(
-        sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
-    testscore = test_accuracy(
-        sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
-    validscore = test_accuracy(
-        sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
+    trainscore = test_accuracy(sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
+    testscore = test_accuracy(sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
+    validscore = test_accuracy(sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
 
     print('%f, ' % trainscore, end='')
     print('%f, ' % testscore, end='')
@@ -115,14 +110,9 @@ def test_graph(sess, batch_size, test_size, dataset):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', nargs='?',
-                        default="bias_layer", help="tensorflow model")
-    parser.add_argument('--loss', nargs='?',
-                        default="softmax", help="tensorflow loss")
-    parser.add_argument('--popsize', nargs='?', type=int,
-                        default=1, help="number of workers (1)")
-    parser.add_argument('--steps', nargs='?', type=int,
-                        default=10, help="number of training steps (10)")
-    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
-                        default='mnist', help='name of dataset')
+    parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
+    parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
+    parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
