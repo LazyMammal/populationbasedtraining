@@ -23,11 +23,11 @@ def main(args):
 
 
 def sgdr(dataset, popsize, training_steps, test_size=1000):
-    init_op = tf.get_collection('init_op')[0]
     loss_fn = tf.get_collection('loss_fn')[0]
     learning_rate = tf.get_collection('learning_rate')[0]
-    train_step = tf.train.GradientDescentOptimizer(
-        learning_rate=learning_rate).minimize(loss_fn)
+    #train_step = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss_fn)
+    train_step = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9).minimize(loss_fn)
+    init_op = tf.global_variables_initializer()
 
     worker_time = Timer()
     with tf.Session() as sess:
