@@ -10,6 +10,7 @@ import mnist
 from test_accuracy import test_accuracy
 import hparams as hp
 import workers as workers_mod
+import sgdr
 
 
 def main(args):
@@ -19,10 +20,57 @@ def main(args):
 
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
 
+    search_grid_epochs(dataset, args.popsize, args.steps, args.learnrate, args.opt, args.workerid)
     #search_grid(dataset, args.popsize, args.train_time, args.steps)
-    multi_random(dataset, args.popsize, args.train_time, args.steps)
+    #multi_random(dataset, args.popsize, args.train_time, args.steps)
 
     print('# total time %3.1f' % main_time.elapsed())
+
+
+def search_grid_epochs(dataset, popsize, epochs, learnlist=[0.1], optimizer='sgd', start_wid=0, test_size=1000):
+    loss_fn = tf.get_collection('loss_fn')[0]
+    learning_rate = tf.get_collection('learning_rate')[0]
+
+    print('#', optimizer, learnlist)
+
+    if optimizer == 'rmsprop':
+        opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
+    elif optimizer == 'momentum':
+        opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+    else:  # 'sgd'
+        opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+
+    beta = 0.01
+    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if var is not None])
+    regularizer = tf.nn.l2_loss(weights)
+    loss = tf.reduce_mean(loss_fn + beta * regularizer)
+    train_step = opt.minimize(loss)
+    init_op = tf.global_variables_initializer()
+
+    worker_time = Timer()
+    with tf.Session() as sess:
+        for step, learn_rate in enumerate(learnlist):
+            sess.run(init_op)
+            train_epochs(sess, start_wid, epochs, step, learn_rate, dataset, test_size, train_step)
+            print('# worker time %3.1fs' % worker_time.split())
+
+
+def train_epochs(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step):
+    numsamples = len(dataset.train.labels)
+    step += 1
+    print('%d, ' % step, end='')
+    print('%d, ' % wid, end='')
+    batch_size = 100
+    iterations = epochs * numsamples // batch_size
+    batch_time = Timer()
+    for b in range(iterations):
+        sgdr.train_batch(sess, batch_size, learn_rate, dataset, train_step)
+    print('%d, %f, %d, ' % (iterations * batch_size, batch_time.split(), iterations), end='')
+    print('%g, ' % learn_rate, end='')
+    print('%d, ' % batch_size, end='')
+    sgdr.test_graph(sess, batch_size, test_size, dataset)
+    return step
 
 
 def multi_random(dataset, popsize, train_time, training_steps, test_size=1000):
@@ -58,16 +106,14 @@ def search_grid(dataset, popsize, train_time, training_steps, test_size=1000):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', nargs='?',
-                        default="bias_layer", help="tensorflow model")
-    parser.add_argument('--loss', nargs='?',
-                        default="softmax", help="tensorflow loss")
-    parser.add_argument('--popsize', nargs='?', type=int,
-                        default=10, help="number of workers (10)")
-    parser.add_argument('--train_time', nargs='?', type=float,
-                        default=10.0, help="training time per worker per step (10.0s)")
-    parser.add_argument('--steps', nargs='?', type=int,
-                        default=10, help="number of training steps (10)")
-    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
-                        default='mnist', help='name of dataset')
+    parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
+    parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument(
+        '--opt', type=str, choices=['sgd', 'momentum', 'rmsprop'],
+        default='momentum', help='optimizer (momentum)')
+    parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
+    parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
+    parser.add_argument('--steps', nargs='?', type=int, default=1, help="number of training steps (1)")
+    parser.add_argument('--learnrate', nargs='*', type=float, default=[0.1], help="learning rate (0.1)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
