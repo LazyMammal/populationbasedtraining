@@ -53,13 +53,13 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
         batch_size = 100
         iterations = numsamples // batch_size
         batch_time = Timer()
-        lr = learn_rate
+        lr_start = scale_learn_rate(learn_rate, epoch, epochs, 0, iterations)
         for b in range(iterations):
             lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
             train_batch(sess, batch_size, lr, dataset, train_step)
         print('%d, %f, %d, ' %
               (numsamples, batch_time.split(), iterations), end='')
-        print('%g, ' % lr, end='')
+        print('%g, ' % lr_start, end='')
         print('%d, ' % batch_size, end='')
         test_graph(sess, batch_size, test_size, dataset)
     return step
