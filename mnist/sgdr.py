@@ -65,6 +65,17 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
     return step
 
 
+def test_learn_rate():
+    epochs = 4
+    learn_rate = .1
+    for epoch in range(epochs):
+        iterations = 4
+        print(epoch)
+        for b in range(iterations):
+            lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
+            print(lr, learn_rate, epoch, epochs, b, iterations)    
+
+
 def scale_learn_rate(learn_rate, epoch, epochs, b, iterations):
     dx = (epoch * iterations + b) / float(epochs * iterations)
     lr = learn_rate * 0.5 * (1.0 + np.cos(dx * np.pi))
