@@ -27,18 +27,19 @@ def main(args):
     fig = plt.figure()
     plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
     plotcompare(workerorder, yaxis={'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
-    plotcompare(workerorder, yaxis={'col': 3, 'label': 'batch size'}, plotnum=223)
+    plotcompare(workerorder, yaxis={'col': 6, 'label': 'validation accuracy', 'limit': (0.0, 1.0)}, plotnum=223)
     plotcompare(workerorder, yaxis={'col': 2, 'label': 'learning rate',
                                     'scale': 'log' if args.logplot else None}, plotnum=224)
+    # plotcompare(workerorder, yaxis={'col': 3, 'label': 'batch size'}, plotnum=223)
     output_plot(outpath)
 
     overfit(workerorder, outpath)
     PQ(workerorder, outpath)
 
     fig = plt.figure()
-    plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
+    # plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
-                              'scale': 'log' if args.logplot else None, 'reverse': True}, plotnum=122)
+                              'scale': 'log' if args.logplot else None, 'reverse': True}) #, plotnum=122)
     output_plot(outpath, '_params')
 
 
@@ -138,8 +139,6 @@ def overfit(workerorder, outpath=None):
     plt.ylabel("test / train")
     for worker in workerorder:
         plt.plot(worker[:, 0], (1 - worker[:, 5]) / (1 - worker[:, 4]), alpha=0.5, marker='o')
-
-    plotcompare(workerorder, yaxis={'col': 6, 'label': 'validation accuracy', 'limit': (0.0, 1.0)}, plotnum=224)
 
     output_plot(outpath, '_overfit')
 
