@@ -63,7 +63,7 @@ def train_workers(dataset, workers, epochs, training_steps, cutoff, optimizer, t
                 train_epochs(sess, epochs, worker['hparams'][0], dataset, train_step)
                 train, test, valid = test_accuracy.test_graph(sess, test_size, dataset)
                 print('%f, %f, %f' % (train, test, valid))
-                worker['score_value'] = overfit_score.overfit_blended(train, test)
+                worker['score_value'] = train * test #overfit_score.overfit_blended(train, test)
                 worker['score'] = (1.0 + worker['score_value']) / (1.0 + score_value)
                 pbt.tournament_replace(worker, workers, cutoff, dup_all=False, explore_fun=pbt.perturb_hparams)
             #pbt.pbt(workers, cutoff, dup_all=False)
