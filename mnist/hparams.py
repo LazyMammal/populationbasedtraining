@@ -5,6 +5,7 @@ import pbt
 
 
 def resample_learnrate():
+    return 2.0**(-6 - 6 * np.random.random())
 
 
 def resample_batchsize():
