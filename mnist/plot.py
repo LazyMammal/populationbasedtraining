@@ -97,14 +97,15 @@ def plotcompare(
     if 'reverse' in yaxis:
         plt.gca().invert_yaxis()
     '''
-    for x, worker in enumerate(workerorder):
+    #for x, worker in enumerate(workerorder):
+    for label, worker in zip(['sgd','momentum','RMSprop'],workerorder):
         a, = plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
-        a.set_label(str(float(x+5)/10))
+        #a.set_label(str(float(x+5)/10))
+        a.set_label(label)
     plt.legend()
     '''
     for worker in workerorder:
         plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
-
 
 def gridplot(steporder, gridshape=(7, 7), outpath=None):
     fig = plt.figure()
