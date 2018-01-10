@@ -37,6 +37,8 @@ def search_grid_epochs(dataset, popsize, epochs, learnlist=[0.1], optimizer='sgd
         opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
     elif optimizer == 'momentum':
         opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
+    elif optimizer == 'adam':
+        opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
     else:  # 'sgd'
         opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
     parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
     parser.add_argument(
-        '--opt', type=str, choices=['sgd', 'momentum', 'rmsprop'],
+        '--opt', type=str, choices=['sgd', 'momentum', 'rmsprop', 'adam'],
         default='momentum', help='optimizer (momentum)')
     parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
     parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
