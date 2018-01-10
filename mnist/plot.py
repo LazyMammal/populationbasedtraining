@@ -105,10 +105,11 @@ def plotcompare(
     if 'reverse' in yaxis:
         plt.gca().invert_yaxis()
     '''
-    #for x, worker in enumerate(workerorder):
-    for label, worker in zip(['sgd','momentum','RMSprop'],workerorder):
+    # for x, worker in enumerate(workerorder):
+    # for label, worker in zip(['GradDescent_1', 'GradDescent_2', 'Momentum_1', 'Momentum_2', 'RMSprop_1', 'RMSprop_2', 'Adam_1', 'Adam_2'], workerorder):
+    for label, worker in zip(['warm restarts', 'online PBT'], workerorder):
         a, = plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
-        #a.set_label(str(float(x+5)/10))
+        # a.set_label(str(float(x+5)/10))
         a.set_label(label)
     plt.legend()
     '''
