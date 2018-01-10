@@ -75,8 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
     parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
     parser.add_argument('--popsize', nargs='?', type=int, default=10, help="number of workers (10)")
-    parser.add_argument('--cutoff', nargs='?', type=float, default=0.2,
-                        help="fraction of population to replace after each step (0.2)")
+    parser.add_argument('--cutoff', nargs='?', type=float, default=0.5, help="tournament cutoff for replacement (0.5)")
     parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
     parser.add_argument('--epochs', nargs='?', type=int, default=1, help="number of epochs to train per step (1)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
