@@ -22,8 +22,7 @@ def main(args):
                             [hp.resample_learnrate, hp.resample_batchsize],
                             [hp.perturb_learnrate, hp.perturb_batchsize])
 
-    train_workers(workers, args.train_time,
-                  args.steps, args.popshrink, pbt.pbt)
+    train_workers(workers, args.train_time, args.steps, args.popshrink, pbt.pbt)
 
     print('# total time %3.1f' % main_time.elapsed())
 
@@ -77,9 +76,8 @@ def train_worker(worker, train_time, test_size):
         worker['dup_from_name'] = None
         io_accum += io_time.split()
         print('%d, ' % worker['id'], end='')
-        trainscore, testscore = train_graph(sess, train_time,
-                                            worker['hparams'][1], test_size,
-                                            worker['hparams'][0], worker['dataset'])
+        trainscore, testscore = train_graph(
+            sess, train_time, worker['hparams'][1], test_size, worker['hparams'][0], worker['dataset'])
         worker['score'] = overfit_score.overfit_blended(trainscore, testscore)
         io_time.split()
         saver2.save(sess, worker['name'])
@@ -100,23 +98,18 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, tr
     total_iterations = 0
     count = 0
     while batch_time.elapsed() < train_time:
-        train_.iterate_training(sess, iterations, batch_size, learn_rate,
-                                dataset, x, y_, train_step, learning_rate)
+        train_.iterate_training(sess, iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate)
         count += 1
         total_iterations += iterations
 
-    print('%d, %f, %d, ' %
-          (total_iterations * batch_size, batch_time.split(), count), end='')
+    print('%d, %f, %d, ' % (total_iterations * batch_size, batch_time.split(), count), end='')
     print('%g, ' % learn_rate, end='')
     print('%d, ' % batch_size, end='')
 
     testdata_size = len(dataset.test.labels)
-    trainscore = test_accuracy.test_accuracy(
-        sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
-    testscore = test_accuracy.test_accuracy(
-        sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
-    validscore = test_accuracy.test_accuracy(
-        sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
+    trainscore = test_accuracy.test_accuracy(sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
+    testscore = test_accuracy.test_accuracy(sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
+    validscore = test_accuracy.test_accuracy(sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
 
     print('%f, ' % trainscore, end='')
     print('%f, ' % testscore, end='')
@@ -127,18 +120,13 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, tr
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', nargs='?',
-                        default="bias_layer", help="tensorflow model")
-    parser.add_argument('--loss', nargs='?',
-                        default="softmax", help="tensorflow loss")
-    parser.add_argument('--popsize', nargs='?', type=int,
-                        default=10, help="number of workers (10)")
-    parser.add_argument('--popshrink', nargs='?', type=float,
-                        default=1.0, help="fraction of population to keep after each step (1.0)")
-    parser.add_argument('--train_time', nargs='?', type=float,
-                        default=10.0, help="training time per worker per step (10.0s)")
-    parser.add_argument('--steps', nargs='?', type=int,
-                        default=10, help="number of training steps (10)")
-    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
-                        default='mnist', help='name of dataset')
+    parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
+    parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument('--popsize', nargs='?', type=int, default=10, help="number of workers (10)")
+    parser.add_argument('--popshrink', nargs='?', type=float, default=1.0,
+                        help="fraction of population to keep after each step (1.0)")
+    parser.add_argument('--train_time', nargs='?', type=float, default=10.0,
+                        help="training time per worker per step (10.0s)")
+    parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())

@@ -22,9 +22,7 @@ def main(args):
                             [hp.resample_learnrate, hp.resample_batchsize],
                             [hp.perturb_learnrate, hp.perturb_batchsize])
 
-    train_workers(dataset, workers, args.train_time,
-                  args.steps, args.cutoff, test_size=1000)
-
+    train_workers(dataset, workers, args.train_time, args.steps, args.cutoff, test_size=1000)
     print('# total time %3.1f' % main_time.elapsed())
 
 
@@ -56,8 +54,7 @@ def train_workers(dataset, workers, train_time, training_steps, cutoff, test_siz
                 trainscore, testscore = workers_mod.train_graph(sess, time_available,
                                                                 worker['hparams'][1], test_size,
                                                                 worker['hparams'][0], dataset, train_step=train_step)
-                worker['score_value'] = overfit_score.overfit_blended(
-                    trainscore, testscore)
+                worker['score_value'] = overfit_score.overfit_blended(trainscore, testscore)
                 worker['score'] = (1.0 + worker['score_value']) / (1.0 + score_value)
                 pbt.tournament_replace(worker, workers, cutoff, dup_all=False, explore_fun=pbt.perturb_hparams)
             #pbt.pbt(workers, cutoff, dup_all=False)
@@ -66,18 +63,13 @@ def train_workers(dataset, workers, train_time, training_steps, cutoff, test_siz
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', nargs='?',
-                        default="bias_layer", help="tensorflow model")
-    parser.add_argument('--loss', nargs='?',
-                        default="softmax", help="tensorflow loss")
-    parser.add_argument('--popsize', nargs='?', type=int,
-                        default=10, help="number of workers (10)")
-    parser.add_argument('--cutoff', nargs='?', type=float,
-                        default=0.2, help="fraction of population to replace after each step (0.2)")
-    parser.add_argument('--train_time', nargs='?', type=float,
-                        default=1.0, help="training time per worker per step (1.0s)")
-    parser.add_argument('--steps', nargs='?', type=int,
-                        default=100, help="number of training steps (100)")
-    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'],
-                        default='mnist', help='name of dataset')
+    parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
+    parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument('--popsize', nargs='?', type=int, default=10, help="number of workers (10)")
+    parser.add_argument('--cutoff', nargs='?', type=float, default=0.2,
+                        help="fraction of population to replace after each step (0.2)")
+    parser.add_argument('--train_time', nargs='?', type=float, default=1.0,
+                        help="training time per worker per step (1.0s)")
+    parser.add_argument('--steps', nargs='?', type=int, default=100, help="number of training steps (100)")
+    parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
