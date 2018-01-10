@@ -107,8 +107,10 @@ def plotcompare(
     '''
     # for x, worker in enumerate(workerorder):
     # for label, worker in zip(['GradDescent_1', 'GradDescent_2', 'Momentum_1', 'Momentum_2', 'RMSprop_1', 'RMSprop_2', 'Adam_1', 'Adam_2'], workerorder):
-    for label, worker in zip(['warm restarts', 'online PBT'], workerorder):
-        a, = plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
+    # for label, worker in zip(['warm restarts', 'online PBT', 'grad descent', 'adam'], workerorder):
+    # for label, worker in zip(['x1.5','x1.7','x2.0','x2.4','x3.0'], workerorder):
+    for label, worker in zip(['x2, 1','x1, 11','x1, 44'], workerorder):
+        a, = plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5) #, marker='o')
         # a.set_label(str(float(x+5)/10))
         a.set_label(label)
     plt.legend()
