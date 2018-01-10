@@ -50,9 +50,11 @@ def search_grid_epochs(dataset, popsize, epochs, learnlist=[0.1], optimizer='sgd
 
     worker_time = Timer()
     with tf.Session() as sess:
-        for step, learn_rate in enumerate(learnlist):
+        for wid, learn_rate in enumerate(learnlist):
+            step = 0
             sess.run(init_op)
-            train_epochs(sess, start_wid, epochs, step, learn_rate, dataset, test_size, train_step)
+            for e in range(epochs):
+                step = train_epochs(sess, wid + start_wid, 1, step, learn_rate, dataset, test_size, train_step)
             print('# worker time %3.1fs' % worker_time.split())
 
 
@@ -62,7 +64,7 @@ def train_epochs(sess, wid, epochs, step, learn_rate, dataset, test_size, train_
     print('%d, ' % step, end='')
     print('%d, ' % wid, end='')
     batch_size = 100
-    iterations = epochs * numsamples // batch_size
+    iterations = epochs * numsamples // batch_size // 4
     batch_time = Timer()
     for b in range(iterations):
         sgdr.train_batch(sess, batch_size, learn_rate, dataset, train_step)
