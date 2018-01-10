@@ -16,24 +16,28 @@ def main(args):
     mnist.gen_model(args.model, args.loss)
 
     print('step, worker, samples, time, learnrate, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
-    sgdr(dataset, args.popsize, args.steps, args.learnrate, args.opt, args.workerid)
+    sgdr(dataset, args.popsize, args.steps, args.learnrate, args.epochmult, args.opt, args.workerid)
     print('# total time %3.1f' % main_time.elapsed())
 
 
-def sgdr(dataset, popsize, training_steps, learnlist=[0.1], optimizer='sgd', start_wid=0, test_size=1000):
+def sgdr(dataset, popsize, training_steps, learnlist=[0.1], epochlist=[2.0], optimizer='sgd', start_wid=0, test_size=1000):
     train_step, init_op, reset_opt = get_optimizer(optimizer)
     worker_time = Timer()
     with tf.Session() as sess:
-        for wid, learn_rate in zip(
+        popsize = max(popsize, len(learnlist), len(epochlist))
+        for wid, learn_rate, epochmult in zip(
                 range(start_wid, start_wid + popsize),
-                np.repeat(learnlist, int(0.5 + float(popsize) / len(learnlist)))):
+                np.repeat(learnlist, int(0.5 + float(popsize) / len(learnlist))),
+                np.repeat(epochlist, int(0.5 + float(popsize) / len(epochlist)))
+        ):
             sess.run(init_op)
-            epochs = 1
+            epochs = 1.0
             step = 0
             for _ in range(1, training_steps + 1):
+                print('#', optimizer, 'lr', learn_rate, 'epochs', epochs)
                 sess.run(reset_opt)
-                step = train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train_step)
-                epochs *= 2
+                step = train_restart(sess, wid, int(epochs + 0.5), step, learn_rate, dataset, test_size, train_step)
+                epochs *= epochmult
                 print('# warm restart, %3.1fs total' % worker_time.elapsed())
             print('# worker time %3.1fs' % worker_time.split())
 
@@ -75,5 +79,6 @@ if __name__ == '__main__':
     parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
     parser.add_argument('--steps', nargs='?', type=int, default=3, help="number of training steps (3)")
     parser.add_argument('--learnrate', nargs='*', type=float, default=[0.1], help="learning rate (0.1)")
+    parser.add_argument('--epochmult', nargs='*', type=float, default=[2.0], help="epoch count multiplier (2.0)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
