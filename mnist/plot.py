@@ -116,7 +116,7 @@ def plotcompare(
     plt.legend()
     '''
     for worker in workerorder:
-        plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5, marker='o')
+        plt.plot(worker[:, xaxis['col']], worker[:, yaxis['col']], alpha=0.5) #, marker='o')
 
 
 def gridplot(steporder, gridshape=(7, 7), outpath=None):
@@ -142,7 +142,7 @@ def overfit(workerorder, outpath=None):
     plt.ylabel("(test - train) / test")
     plt.ylim(0.0, 1.0)
     for worker in workerorder:
-        plt.plot(worker[:, 0], overfit_score.overfit_accuracy(worker[:, 4], worker[:, 5]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], overfit_score.overfit_accuracy(worker[:, 4], worker[:, 5]), alpha=0.5) #, marker='o')
 
     plt.subplot(223)
     plt.title('overfit blended (bigger is better)')
@@ -150,14 +150,14 @@ def overfit(workerorder, outpath=None):
     plt.ylabel("(1.0 - overfit) * train_accuracy")
     plt.ylim(0.0, 1.0)
     for worker in workerorder:
-        plt.plot(worker[:, 0], overfit_score.overfit_blended(worker[:, 4], worker[:, 5]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], overfit_score.overfit_blended(worker[:, 4], worker[:, 5]), alpha=0.5) #, marker='o')
 
     plt.subplot(222)
     plt.title('test / train')
     plt.xlabel("epoch")
     plt.ylabel("test / train")
     for worker in workerorder:
-        plt.plot(worker[:, 0], (1 - worker[:, 5]) / (1 - worker[:, 4]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], (1 - worker[:, 5]) / (1 - worker[:, 4]), alpha=0.5) #, marker='o')
 
     output_plot(outpath, '_overfit')
 
@@ -169,14 +169,14 @@ def PQ(workerorder, outpath=None):
     plt.xlabel("epoch")
     plt.ylabel("avg(test) / best(test)")
     for worker in workerorder:
-        plt.plot(worker[:, 0], pq_score.gl_accuracy(worker[:, 10], worker[:, 8]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.gl_accuracy(worker[:, 10], worker[:, 8]), alpha=0.5) #, marker='o')
 
     plt.subplot(224)
     plt.title('P - Progress (filtered)')
     plt.xlabel("epoch")
     plt.ylabel("avg(train) / best(train)")
     for worker in workerorder:
-        plt.plot(worker[:, 0], pq_score.p_accuracy(worker[:, 9], worker[:, 7]), alpha=0.5, marker='o')
+        plt.plot(worker[:, 0], pq_score.p_accuracy(worker[:, 9], worker[:, 7]), alpha=0.5) #, marker='o')
 
     plt.subplot(221)
     plt.title('PQ - Generality to Progress Ratio')
@@ -189,7 +189,7 @@ def PQ(workerorder, outpath=None):
                                  worker[:, 7],
                                  worker[:, 10],
                                  worker[:, 8]),
-            alpha=0.5, marker='o')
+            alpha=0.5) #, marker='o')
     output_plot(outpath, '_PQ')
 
 
