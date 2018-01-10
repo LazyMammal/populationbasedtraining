@@ -11,6 +11,7 @@ from test_accuracy import test_accuracy
 import hparams as hp
 import workers as workers_mod
 import sgdr
+from optimizer import get_optimizer
 
 
 def main(args):
@@ -20,36 +21,15 @@ def main(args):
 
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
 
-    search_grid_epochs(dataset, args.popsize, args.steps, args.learnrate, args.opt, args.workerid)
+    search_grid_epochs(dataset, args.steps, args.learnrate, args.opt, args.workerid)
     #search_grid(dataset, args.popsize, args.train_time, args.steps)
     #multi_random(dataset, args.popsize, args.train_time, args.steps)
 
     print('# total time %3.1f' % main_time.elapsed())
 
 
-def search_grid_epochs(dataset, popsize, epochs, learnlist=[0.1], optimizer='sgd', start_wid=0, test_size=1000):
-    loss_fn = tf.get_collection('loss_fn')[0]
-    learning_rate = tf.get_collection('learning_rate')[0]
-
-    print('#', optimizer, learnlist)
-
-    if optimizer == 'rmsprop':
-        opt = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
-    elif optimizer == 'momentum':
-        opt = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
-    elif optimizer == 'adam':
-        opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    else:  # 'sgd'
-        opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-
-    beta = 0.01
-    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-    weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if var is not None])
-    regularizer = tf.nn.l2_loss(weights)
-    loss = tf.reduce_mean(loss_fn + beta * regularizer)
-    train_step = opt.minimize(loss)
-    init_op = tf.global_variables_initializer()
-
+def search_grid_epochs(dataset, epochs, learnlist=[0.1], optimizer='sgd', start_wid=0, test_size=1000):
+    train_step, init_op, reset_opt = get_optimizer(optimizer)
     worker_time = Timer()
     with tf.Session() as sess:
         for wid, learn_rate in enumerate(learnlist):
