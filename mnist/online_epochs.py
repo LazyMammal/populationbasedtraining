@@ -19,7 +19,7 @@ def main(args):
 
     print('step, worker, samples, time, loops, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
     workers = build_workers(args.popsize, [hp.resample_learnrate], [hp.perturb_learnrate])
-    train_workers(dataset, workers, args.epochs, args.steps, args.cutoff, test_size=1000)
+    train_workers(dataset, workers, args.epochs, args.steps, args.cutoff, args.opt)
     print('# total time %3.1f' % main_time.elapsed())
 
 
@@ -48,8 +48,8 @@ def train_epochs(sess, epochs, learn_rate, dataset, train_step):
     print('%d, ' % batch_size, end='')
 
 
-def train_workers(dataset, workers, epochs, training_steps, cutoff, test_size=1000):
-    train_step, init_op, reset_opt = get_optimizer()
+def train_workers(dataset, workers, epochs, training_steps, cutoff, optimizer, test_size=1000):
+    train_step, init_op, reset_opt = get_optimizer(optimizer)
     step = 0
     with tf.Session() as sess:
         sess.run(init_op)
@@ -74,6 +74,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
     parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument(
+        '--opt', type=str, choices=['sgd', 'momentum', 'rmsprop', 'adam'],
+        default='momentum', help='optimizer (momentum)')
     parser.add_argument('--popsize', nargs='?', type=int, default=10, help="number of workers (10)")
     parser.add_argument('--cutoff', nargs='?', type=float, default=0.5, help="tournament cutoff for replacement (0.5)")
     parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
