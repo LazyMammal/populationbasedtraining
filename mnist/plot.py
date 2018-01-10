@@ -43,7 +43,7 @@ def main(args):
     fig = plt.figure()
     # plotcompare(workerorder, {'col': 3, 'label': 'batch size', 'scale': 'log' if args.logplot else None}, plotnum=121)
     plotcompare(workerorder, {'col': 2, 'label': 'learning rate',
-                              'scale': 'log' if args.logplot else None, 'reverse': True}) #, plotnum=122)
+                              'scale': 'log' if args.logplot else None, 'reverse': True})  # , plotnum=122)
     output_plot(outpath, '_params')
 
 
