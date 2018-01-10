@@ -1,15 +1,13 @@
 from __future__ import print_function
 
-import sys
 import argparse
 from importlib import import_module
-
-import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from timer import Timer
-from test_accuracy import test_accuracy
+import test_accuracy
+import train_graph
 
 
 def main(args):
@@ -60,21 +58,14 @@ def gen_model(model, loss):
     return x, y_, train_step, learning_rate, accuracy
 
 
-def iterate_training(sess, batch_iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate):
-    for i in range(batch_iterations):
-        batch_xs, batch_ys = dataset.train.next_batch(batch_size)
-        sess.run(train_step, feed_dict={
-            x: batch_xs, y_: batch_ys, learning_rate: learn_rate})
-
-
 def run_session(iterations, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate, accuracy):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         train_session(sess, iterations, batch_size, learn_rate,
                       dataset, x, y_, train_step, learning_rate, accuracy)
-        test_size = len(dataset.test.labels)
-        test_score = test_accuracy(sess, dataset.test, test_size, batch_size, x, y_, accuracy)
-        print('test cases %d, ' % test_size, end='')
+        testdata_size = len(dataset.test.labels)
+        test_score = test_accuracy.test_accuracy(sess, dataset.test, testdata_size, batch_size, x, y_, accuracy)
+        print('test cases %d, ' % testdata_size, end='')
         print('test accuracy %g' % test_score)
 
 
@@ -89,7 +80,7 @@ def train_session(sess, iterations, batch_size, learn_rate, dataset, x, y_, trai
         print('batch time %g, ' % batch_time.split(), end='')
         print('learning rate %g, ' % learn_rate, end='')
         print('training accuracy %g' % train_accuracy)
-        iterate_training(sess, batch_iterations, batch_size, learn_rate,
+        train_graph.iterate_training(sess, batch_iterations, batch_size, learn_rate,
                          dataset, x, y_, train_step, learning_rate)
 
 

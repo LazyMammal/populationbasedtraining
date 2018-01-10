@@ -1,16 +1,13 @@
 from __future__ import print_function
 
-import sys
 import argparse
-
-import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
-from test_accuracy import test_accuracy
+import test_accuracy
+import train_graph
 import hparams as hp
 import workers as workers_mod
-import sgdr
 from optimizer import get_optimizer
 
 
@@ -49,11 +46,11 @@ def train_epochs(sess, wid, epochs, step, learn_rate, dataset, test_size, train_
     iterations = epochs * numsamples // batch_size // 4
     batch_time = Timer()
     for b in range(iterations):
-        sgdr.train_batch(sess, batch_size, learn_rate, dataset, train_step)
+        train_graph.train_batch(sess, batch_size, learn_rate, dataset, train_step)
     print('%d, %f, %d, ' % (iterations * batch_size, batch_time.split(), iterations), end='')
     print('%g, ' % learn_rate, end='')
     print('%d, ' % batch_size, end='')
-    sgdr.test_graph(sess, batch_size, test_size, dataset)
+    print('%f, %f, %f' % test_accuracy.test_graph(sess, test_size, dataset))
     return step
 
 

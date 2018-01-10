@@ -1,15 +1,12 @@
 from __future__ import print_function
 
-import sys
 import argparse
-
 import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
-from test_accuracy import test_accuracy
-import hparams as hp
-import workers as workers_mod
+import test_accuracy
+import train_graph
 from optimizer import get_optimizer
 
 
@@ -53,11 +50,11 @@ def train_restart(sess, wid, epochs, step, learn_rate, dataset, test_size, train
         lr_start = scale_learn_rate(learn_rate, epoch, epochs, 0, iterations)
         for b in range(iterations):
             lr = scale_learn_rate(learn_rate, epoch, epochs, b, iterations)
-            train_batch(sess, batch_size, lr, dataset, train_step)
+            train_graph.train_batch(sess, batch_size, lr, dataset, train_step)
         print('%d, %f, %d, ' % (iterations * batch_size, batch_time.split(), iterations), end='')
         print('%g, ' % lr_start, end='')
         print('%d, ' % batch_size, end='')
-        test_graph(sess, batch_size, test_size, dataset)
+        print('%f, %f, %f' % test_accuracy.test_graph(sess, test_size, dataset))
     return step
 
 
@@ -78,33 +75,6 @@ def scale_learn_rate(learn_rate, epoch, epochs, b, iterations):
     return lr
 
 
-def train_batch(sess, batch_size, learn_rate, dataset, train_step=None):
-    if train_step is None:
-        train_step = tf.get_collection('train_step')[0]
-    x = tf.get_collection('x')[0]
-    y_ = tf.get_collection('y_')[0]
-    learning_rate = tf.get_collection('learning_rate')[0]
-
-    mnist.iterate_training(sess, 1, batch_size, learn_rate, dataset, x, y_, train_step, learning_rate)
-
-
-def test_graph(sess, batch_size, test_size, dataset):
-    x = tf.get_collection('x')[0]
-    y_ = tf.get_collection('y_')[0]
-    accuracy = tf.get_collection('accuracy')[0]
-
-    testdata_size = len(dataset.test.labels)
-    trainscore = test_accuracy(sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
-    testscore = test_accuracy(sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
-    validscore = test_accuracy(sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
-
-    print('%f, ' % trainscore, end='')
-    print('%f, ' % testscore, end='')
-    print('%f' % validscore)
-
-    return (trainscore, testscore)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?', default="bias_layer", help="tensorflow model")
@@ -114,7 +84,7 @@ if __name__ == '__main__':
         default='momentum', help='optimizer (momentum)')
     parser.add_argument('--popsize', nargs='?', type=int, default=1, help="number of workers (1)")
     parser.add_argument('--workerid', nargs='?', type=int, default=0, help="starting worker id number (0)")
-    parser.add_argument('--steps', nargs='?', type=int, default=10, help="number of training steps (10)")
+    parser.add_argument('--steps', nargs='?', type=int, default=3, help="number of training steps (3)")
     parser.add_argument('--learnrate', nargs='*', type=float, default=[0.1], help="learning rate (0.1)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
