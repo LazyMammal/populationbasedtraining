@@ -1,14 +1,12 @@
 from __future__ import print_function
 
-import sys
 import argparse
-
-import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
 import pbt
-from test_accuracy import test_accuracy
+import test_accuracy
+import train_graph as train_
 import overfit_score
 import hparams as hp
 
@@ -102,8 +100,8 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, tr
     total_iterations = 0
     count = 0
     while batch_time.elapsed() < train_time:
-        mnist.iterate_training(sess, iterations, batch_size, learn_rate,
-                               dataset, x, y_, train_step, learning_rate)
+        train_.iterate_training(sess, iterations, batch_size, learn_rate,
+                                dataset, x, y_, train_step, learning_rate)
         count += 1
         total_iterations += iterations
 
@@ -113,11 +111,11 @@ def train_graph(sess, train_time, batch_size, test_size, learn_rate, dataset, tr
     print('%d, ' % batch_size, end='')
 
     testdata_size = len(dataset.test.labels)
-    trainscore = test_accuracy(
+    trainscore = test_accuracy.test_accuracy(
         sess, dataset.train, testdata_size, test_size, x, y_, accuracy, True)
-    testscore = test_accuracy(
+    testscore = test_accuracy.test_accuracy(
         sess, dataset.test, testdata_size, test_size, x, y_, accuracy)
-    validscore = test_accuracy(
+    validscore = test_accuracy.test_accuracy(
         sess, dataset.validation, testdata_size, test_size, x, y_, accuracy)
 
     print('%f, ' % trainscore, end='')

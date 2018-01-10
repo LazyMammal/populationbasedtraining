@@ -1,17 +1,14 @@
 from __future__ import print_function
 
-import sys
 import argparse
-
-import numpy as np
 import tensorflow as tf
 from timer import Timer
 import mnist
 import pbt
-from test_accuracy import test_accuracy
 import overfit_score
 import hparams as hp
 import workers as workers_mod
+from optimizer import get_optimizer
 
 
 def main(args):
@@ -45,12 +42,7 @@ def build_workers(popsize, hparams_fun=None, perturb_fun=None):
 
 
 def train_workers(dataset, workers, train_time, training_steps, cutoff, test_size=1000):
-    init_op = tf.get_collection('init_op')[0]
-    loss_fn = tf.get_collection('loss_fn')[0]
-    learning_rate = tf.get_collection('learning_rate')[0]
-    train_step = tf.train.GradientDescentOptimizer(
-        learning_rate=learning_rate).minimize(loss_fn)
-
+    train_step, init_op, reset_opt = get_optimizer()
     worker = 0
     with tf.Session() as sess:
         sess.run(init_op)
