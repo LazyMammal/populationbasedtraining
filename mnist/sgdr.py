@@ -16,22 +16,23 @@ def main(args):
     mnist.gen_model(args.model, args.loss)
 
     print('step, worker, samples, time, learnrate, learnrate, batchsize, trainaccuracy, testaccuracy, validation')
-    sgdr(dataset, args.popsize, args.epochs, args.learnrate, args.epochmult, args.opt, args.workerid)
+    sgdr(dataset, args.popsize, args.epochs, args.learnrate, args.epochmult, args.epochmin, args.opt, args.workerid)
     print('# total time %3.1f' % main_time.elapsed())
 
 
-def sgdr(dataset, popsize, training_steps, learnlist=[0.1], epochlist=[2.0], optimizer='sgd', start_wid=0, test_size=1000):
+def sgdr(dataset, popsize, training_steps, learnlist=[0.1], epochlist=[2.0], minlist=[1.0], optimizer='sgd', start_wid=0, test_size=1000):
     train_step, init_op, reset_opt = get_optimizer(optimizer)
     worker_time = Timer()
     with tf.Session() as sess:
-        popsize = max(popsize, len(learnlist), len(epochlist))
-        for wid, learn_rate, epochmult in zip(
+        popsize = max(popsize, len(learnlist), len(epochlist), len(minlist))
+        for wid, learn_rate, epochmult, epochmin in zip(
                 range(start_wid, start_wid + popsize),
                 np.repeat(learnlist, int(0.5 + float(popsize) / len(learnlist))),
-                np.repeat(epochlist, int(0.5 + float(popsize) / len(epochlist)))
+                np.repeat(epochlist, int(0.5 + float(popsize) / len(epochlist))),
+                np.repeat(minlist, int(0.5 + float(popsize) / len(minlist)))
         ):
             sess.run(init_op)
-            epochs = 1.0
+            epochs = epochmin
             step = 0
             while step < training_steps:
                 print('#', optimizer, ', lr', learn_rate, 'epochs', epochs, 'mult', epochmult)
@@ -81,5 +82,6 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', nargs='?', type=int, default=128, help="total number of epochs to train (128)")
     parser.add_argument('--learnrate', nargs='*', type=float, default=[0.1], help="learning rate (0.1)")
     parser.add_argument('--epochmult', nargs='*', type=float, default=[2.0], help="epoch count multiplier (2.0)")
+    parser.add_argument('--epochmin', nargs='*', type=float, default=[1.0], help="minimum epoch count (1.0)")
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion'], default='mnist', help='name of dataset')
     main(parser.parse_args())
