@@ -29,6 +29,10 @@ def main(args):
     output_plot(outpath, '_lr')
 
     fig = plt.figure()
+    plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)})
+    output_plot(outpath, '_test')
+
+    fig = plt.figure()
     plotcompare(workerorder, yaxis={'col': 5, 'label': 'test accuracy', 'limit': (0.0, 1.0)}, plotnum=221)
     plotcompare(workerorder, yaxis={'col': 4, 'label': 'train accuracy', 'limit': (0.0, 1.0)}, plotnum=222)
     plotcompare(workerorder, yaxis={'col': 6, 'label': 'validation accuracy', 'limit': (0.0, 1.0)}, plotnum=223)
