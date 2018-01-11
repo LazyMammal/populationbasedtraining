@@ -31,6 +31,46 @@ def feed_dict():
 
 
 def datasets(model, loss):
+    modelmodule = import_module(model)
+    lossmodule = import_module(loss)
+    learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
+
+    mnist_dataset = mnist.get_dataset('fashion')
+    datasize = len(mnist_dataset.train.labels)
+
+    features = mnist_dataset.train.images
+    labels = mnist_dataset.train.labels
+    assert features.shape[0] == labels.shape[0]
+
+    batch_size = 1000
+
+    dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+    dataset = dataset.take(datasize)
+    dataset = dataset.batch(batch_size)
+
+    iterator = dataset.make_initializable_iterator()
+    next_example, next_label = iterator.get_next()
+
+    model = modelmodule.make_model(next_example, next_label)
+    loss_fn = lossmodule.make_loss(model, next_label)
+    train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_fn)
+
+    with tf.Session() as sess:
+        print("datasets")
+        sess.run(tf.global_variables_initializer())
+        epoch = 0
+        epoch_time = Timer()
+        iterations = datasize // batch_size
+        while True:
+            sess.run(iterator.initializer)
+            for _ in range(iterations):
+                sess.run(train_step)
+            epoch += 1
+            split = epoch_time.split()
+            print('%d, %d, %d, %3.1fs, %d/s' % (epoch, batch_size, iterations, split, datasize // split))
+
+
+def datasets_batch_size(model, loss):
     """
         this is a bit of hack.  normally one would NOT duplicate the dataset so many times.
         crashes Python interpretor after about 10 loops
