@@ -32,7 +32,7 @@ def gen_model(model, loss):
 
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
-    learning_rate = tf.placeholder(tf.float32, shape=[])
+    learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
 
     y = modelmodule.make_model(x, y_)
     loss_fn = lossmodule.make_loss(y, y_)
