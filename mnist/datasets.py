@@ -3,13 +3,80 @@ from __future__ import print_function
 from importlib import import_module
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 import mnist
 from timer import Timer
 
 
+MNIST = mnist.get_dataset('fashion')
+
+
 def main():
     # feed_dict()
-    datasets('conv_dropout_model', 'softmax')
+    # datasets('conv_dropout_model', 'softmax')
+    augment()
+
+
+def augment():
+    test_dataset = tf.data.Dataset.from_tensor_slices((MNIST.test.images, MNIST.test.labels))
+    dataset = sample_pair_dataset()
+
+    test_iterator = test_dataset.make_one_shot_iterator()
+    test_example, test_label = test_iterator.get_next()
+
+    iterator = dataset.make_one_shot_iterator()
+    next_example, next_label = iterator.get_next()
+
+    with tf.device("cpu:0"):
+        with tf.Session() as sess:
+            plotnum = 1
+            for _ in range(16):
+                features = sess.run(next_example)
+                plt.subplot(4, 4, plotnum)
+                plt.imshow(features)
+                plotnum += 1
+            plt.show()
+
+
+def gen_mnist_pairs():
+    while True:
+        yield MNIST.train.next_batch(2)
+
+
+def _distort_images(pair, labels):
+    result1, label1 = _distort_image(pair[0], labels[0])
+    result2, label2 = _distort_image(pair[1], labels[1])
+    return [result1, result2], [label1, label2]
+
+
+def _distort_image(features, labels):
+    with tf.variable_scope('distortimage', reuse=tf.AUTO_REUSE):
+        image = tf.reshape(features, (28, 28, 1))
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.grayscale_to_rgb(image)
+        frac = tf.random_uniform([1], 0., 1.)
+        pad = tf.random_uniform([2], 0, 4, tf.int32)
+        image = tf.image.crop_to_bounding_box(image, pad[0], pad[1], 28 - pad[0], 28 - pad[1])
+        image = tf.image.pad_to_bounding_box(image, pad[0], pad[1], 28, 28)
+        image = tf.image.random_brightness(image, max_delta=32. / 255.)
+        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+        image = tf.image.rgb_to_grayscale(image)
+        image = tf.clip_by_value(image, 0.0, 1.0)
+        return tf.squeeze(image), labels
+
+
+def _mix_images(features, labels):
+    return (.7 * features[0] + .3 * features[1]), labels[0]
+
+
+def sample_pair_dataset():
+    dataset = tf.data.Dataset.from_generator(gen_mnist_pairs, (tf.float32, tf.float32))
+    dataset = dataset.map(_distort_images, 4)
+    dataset = dataset.map(_mix_images, 4)
+    dataset = dataset.repeat()
+    dataset = dataset.prefetch(100)
+    #dataset = dataset.batch(300)
+    return dataset
 
 
 def feed_dict():
@@ -35,11 +102,10 @@ def datasets(model, loss):
     lossmodule = import_module(loss)
     learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
 
-    mnist_dataset = mnist.get_dataset('fashion')
-    datasize = len(mnist_dataset.train.labels)
+    datasize = len(MNIST.train.labels)
 
-    features = mnist_dataset.train.images
-    labels = mnist_dataset.train.labels
+    features = MNIST.train.images
+    labels = MNIST.train.labels
     assert features.shape[0] == labels.shape[0]
 
     batch_size = 1000
@@ -79,11 +145,10 @@ def datasets_batch_size(model, loss):
     lossmodule = import_module(loss)
     learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
 
-    mnist_dataset = mnist.get_dataset('fashion')
-    datasize = len(mnist_dataset.train.labels) // 4
+    datasize = len(MNIST.train.labels) // 4
 
-    features = mnist_dataset.train.images
-    labels = mnist_dataset.train.labels
+    features = MNIST.train.images
+    labels = MNIST.train.labels
     assert features.shape[0] == labels.shape[0]
 
     dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -110,7 +175,7 @@ def datasets_batch_size(model, loss):
             batch_dataset = dataset.batch(batch_size)
             #batch_iterator = batch_dataset.make_initializable_iterator()
             #batch_handle = sess.run(batch_iterator.string_handle())
-            #sess.run(batch_iterator.initializer)
+            # sess.run(batch_iterator.initializer)
             sess.run(iterator.make_initializer(batch_dataset))
             print('# %3.1fs' % epoch_time.split())
             for _ in range(iterations):
