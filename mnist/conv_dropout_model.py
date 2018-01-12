@@ -6,8 +6,8 @@ import numpy as np
 
 
 def make_model(x, y_):
-    input_size = int(x.get_shape()[-1])
-    input_edge = int(np.sqrt(input_size))
+    xshape = x.get_shape()
+    input_edge = int(np.sqrt(int(xshape[-1]))) if len(xshape) == 2 else xshape[1]
     output_size = int(y_.get_shape()[-1])
 
     # --> [batch, n, n, 1]
