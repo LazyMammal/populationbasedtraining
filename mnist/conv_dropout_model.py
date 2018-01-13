@@ -11,40 +11,40 @@ def make_model(x, y_):
     output_size = int(y_.get_shape()[-1])
 
     # --> [batch, n, n, 1]
-    input_layer = tf.reshape(x, [-1, input_edge, input_edge, 1])
+    input_layer = tf.reshape(x, [-1, input_edge, input_edge, 1], name="input_layer")
 
     # --> [batch, n, n, 32]
     conv1 = tf.layers.conv2d(
-        input_layer, 32, [5, 5], padding="same", activation=tf.nn.relu)
+        input_layer, 32, [5, 5], padding="same", activation=tf.nn.relu, name="conv1")
 
     # --> [batch, n/2, n/2, 32]
-    pool1 = tf.layers.max_pooling2d(conv1, [2, 2], strides=2)
+    pool1 = tf.layers.max_pooling2d(conv1, [2, 2], strides=2, name="pool1")
 
     '''
     # --> [batch, n/2, n/2, 16]
     conv2 = tf.layers.conv2d(
-        pool1, 16, [5, 5], padding="same", activation=tf.nn.relu)
+        pool1, 16, [5, 5], padding="same", activation=tf.nn.relu, name="conv2")
 
     # --> [batch, n/4, n/4, 16]
-    pool2 = tf.layers.max_pooling2d(conv2, [2, 2], strides=2)
+    pool2 = tf.layers.max_pooling2d(conv2, [2, 2], strides=2, name="pool2")
 
     # --> [batch, ?]
-    pool2_flat = tf.contrib.layers.flatten(pool2)
+    pool2_flat = tf.contrib.layers.flatten(pool2, name="pool2_flat"))
     '''
     # --> [batch, ?]
     pool2_flat = tf.contrib.layers.flatten(pool1)
     
     # --> [batch, 1024]
-    dense = tf.layers.dense(pool2_flat, 1024, tf.nn.relu)
+    dense = tf.layers.dense(pool2_flat, 1024, tf.nn.relu, name="dense")
 
     # dropout
     dropout_rate = tf.placeholder_with_default(tf.constant(0.4, dtype=tf.float32), shape=[])
     dropout_bool = tf.placeholder_with_default(tf.constant(True, dtype=tf.bool), shape=[])
     tf.add_to_collection('dropout_rate', dropout_rate)
     tf.add_to_collection('dropout_bool', dropout_bool)
-    dropout = tf.layers.dropout(dense, rate=dropout_rate, training=dropout_bool)
+    dropout = tf.layers.dropout(dense, rate=dropout_rate, training=dropout_bool, name="dropout")
 
     # --> [batch, output_size]
-    logits = tf.layers.dense(dropout, output_size)
+    logits = tf.layers.dense(dropout, output_size, name="logits")
 
     return logits

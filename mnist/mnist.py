@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import argparse
 from importlib import import_module
+import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 from timer import Timer
@@ -13,6 +14,9 @@ def main(args):
     main_time = Timer()
     dataset = get_dataset(args.dataset)
     model = gen_model(args.model, args.loss)
+    for v in tf.trainable_variables():
+        print("trainable variable :", v.name, ":", v.shape, ":", np.prod(v.shape))
+    print("total free parameters:", np.sum([np.prod(v.shape) for v in tf.trainable_variables()]))
     run_session(args.iterations, args.batch_size, args.learning_rate, dataset, *model)
     print('total time %g' % main_time.elapsed())
 
