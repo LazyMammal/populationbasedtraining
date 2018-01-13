@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import argparse
 from importlib import import_module
 import numpy as np
 import tensorflow as tf
@@ -11,10 +12,14 @@ from timer import Timer
 MNIST = mnist.get_dataset('fashion')
 
 
-def main():
+def main(args):
+    # augment()
     # feed_dict()
-    # datasets('conv_dropout_model', 'softmax')
-    augment()
+    # datasets(args.model, args.loss, args.batch_size)
+    for batch_size in [1, 2, 4, 8, 16, 32, 64] + list(range(100, 3000, 100)):
+        if batch_size >= args.batch_size:
+            tf.reset_default_graph()
+            datasets(args.model, args.loss, batch_size)
 
 
 def augment():
@@ -96,8 +101,8 @@ def feed_dict():
             print('%d, %d, %3.1fs, %d/s' % (batch_size, iterations, split, datasize // split))
 
 
-def datasets(model, loss):
-    modelmodule = import_module(model)
+def datasets(modelname, loss, batch_size=1000):
+    modelmodule = import_module(modelname)
     lossmodule = import_module(loss)
     learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
 
@@ -106,8 +111,6 @@ def datasets(model, loss):
     features = MNIST.train.images
     labels = MNIST.train.labels
     assert features.shape[0] == labels.shape[0]
-
-    batch_size = 1000
 
     dataset = tf.data.Dataset.from_tensor_slices((features, labels))
     dataset = dataset.take(datasize)
@@ -121,12 +124,12 @@ def datasets(model, loss):
     train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_fn)
 
     with tf.Session() as sess:
-        print("datasets")
+        print("datasets: batch_size %d, model %s" % (batch_size, modelname))
         sess.run(tf.global_variables_initializer())
         epoch = 0
         epoch_time = Timer()
         iterations = datasize // batch_size
-        while True:
+        for _ in range(3):
             sess.run(iterator.initializer)
             for _ in range(iterations):
                 sess.run(train_step)
@@ -185,4 +188,8 @@ def datasets_batch_size(model, loss):
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', nargs='?', default="conv_dropout_model", help="tensorflow model (conv dropout)")
+    parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
+    parser.add_argument('--batch_size', nargs='?', type=int, default=1000, help="batch size (1000)")
+    main(parser.parse_args())
