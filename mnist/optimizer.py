@@ -15,7 +15,7 @@ def get_optimizer(optimizer='sgd'):
     beta = 0.01
     var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
     weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if var is not None])
-    regularizer = tf.nn.l2_loss(weights)
+    regularizer = tf.nn.l2_loss(weights) # TODO: exclude bias terms from regularization
     loss = tf.reduce_mean(loss_fn + beta * regularizer)
     train_step = opt.minimize(loss)
 
