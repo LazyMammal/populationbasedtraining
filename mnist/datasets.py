@@ -123,13 +123,16 @@ def datasets(modelname, loss, batch_size=1000):
     loss_fn = lossmodule.make_loss(model, next_label)
     train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_fn)
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto() 
+    config.gpu_options.allow_growth = True 
+    with tf.Session(config=config) as sess:
         print("datasets: batch_size %d, model %s" % (batch_size, modelname))
         sess.run(tf.global_variables_initializer())
         epoch = 0
         epoch_time = Timer()
         iterations = datasize // batch_size
-        for _ in range(3):
+        #for _ in range(100):
+        while True:
             sess.run(iterator.initializer)
             for _ in range(iterations):
                 sess.run(train_step)
