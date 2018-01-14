@@ -19,7 +19,7 @@ def main(args):
     for batch_size in [1, 2, 4, 8, 16, 32, 64] + list(range(100, 3000, 100)):
         if batch_size >= args.batch_size:
             tf.reset_default_graph()
-            datasets(args.model, args.loss, batch_size)
+            datasets(args.model, args.loss, batch_size, args.trials)
 
 
 def augment():
@@ -101,7 +101,7 @@ def feed_dict():
             print('%d, %d, %3.1fs, %d/s' % (batch_size, iterations, split, datasize // split))
 
 
-def datasets(modelname, loss, batch_size=1000):
+def datasets(modelname, loss, batch_size=1000, trials=1):
     modelmodule = import_module(modelname)
     lossmodule = import_module(loss)
     learning_rate = tf.placeholder_with_default(tf.constant(0.01, dtype=tf.float32), shape=[])
@@ -123,16 +123,18 @@ def datasets(modelname, loss, batch_size=1000):
     loss_fn = lossmodule.make_loss(model, next_label)
     train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_fn)
 
+    '''
     config = tf.ConfigProto() 
     config.gpu_options.allow_growth = True 
     with tf.Session(config=config) as sess:
+    '''
+    with tf.Session() as sess:
         print("datasets: batch_size %d, model %s" % (batch_size, modelname))
         sess.run(tf.global_variables_initializer())
         epoch = 0
         epoch_time = Timer()
         iterations = datasize // batch_size
-        #for _ in range(100):
-        while True:
+        for _ in range(trials):
             sess.run(iterator.initializer)
             for _ in range(iterations):
                 sess.run(train_step)
@@ -194,5 +196,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', nargs='?', default="conv_dropout_model", help="tensorflow model (conv dropout)")
     parser.add_argument('--loss', nargs='?', default="softmax", help="tensorflow loss")
-    parser.add_argument('--batch_size', nargs='?', type=int, default=1000, help="batch size (1000)")
+    parser.add_argument('--batch_size', nargs='?', type=int, default=32, help="batch size (32)")
+    parser.add_argument('--trials', nargs='?', type=int, default=2, help="num trials (2)")
     main(parser.parse_args())
