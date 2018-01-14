@@ -14,9 +14,13 @@ def main(args):
     main_time = Timer()
     dataset = get_dataset(args.dataset)
     model = gen_model(args.model, args.loss)
-    for v in tf.trainable_variables():
-        print("trainable variable :", v.name, ":", v.shape, ":", np.prod(v.shape))
-    print("total free parameters:", np.sum([np.prod(v.shape) for v in tf.trainable_variables()]))
+
+    var_list = [var for var in tf.trainable_variables() if var is not None]
+    weights = [v for v in var_list if not v.name.endswith('bias:0')]
+    for v in weights:
+        print("trainable weights :", v.name, ":", v.shape, ":", np.prod(v.shape))
+    print("total (weights + biases):", np.sum([np.prod(v.shape) for v in var_list]))
+
     run_session(args.iterations, args.batch_size, args.learning_rate, dataset, *model)
     print('total time %g' % main_time.elapsed())
 

@@ -13,13 +13,13 @@ def get_optimizer(optimizer='sgd'):
     else:  # 'sgd'
         opt = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
     beta = 0.01
-    var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-    weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if var is not None])
-    regularizer = tf.nn.l2_loss(weights) # TODO: exclude bias terms from regularization
+    var_list = [var for var in tf.trainable_variables() if var is not None]
+    weights = tf.add_n([tf.nn.l2_loss(var) for var in var_list if not var.name.endswith('bias:0')])
+    regularizer = tf.nn.l2_loss(weights)
     loss = tf.reduce_mean(loss_fn + beta * regularizer)
     train_step = opt.minimize(loss)
 
-    opt_vars = [opt.get_slot(var, name) for name in opt.get_slot_names() for var in var_list if var is not None]
+    opt_vars = [opt.get_slot(var, name) for name in opt.get_slot_names() for var in var_list]
     if isinstance(opt, tf.train.AdamOptimizer):
         opt_vars.extend([opt._beta1_power, opt._beta2_power])
     reset_opt = tf.variables_initializer(opt_vars)
